@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bee on Budget — Vacation Plans</title>
+<!-- PWA meta tags -->
+<meta name="theme-color" content="#F5A623">
+<meta name="description" content="Plan and budget your dream vacation. Track costs, group payments, checklists, and print receipts — all offline.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Vacation Plans">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- Inline SVG apple touch icon -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='256' fill='%23F5A623'/%3E%3Ccircle cx='256' cy='256' r='238' fill='%23FFFBF0'/%3E%3Ctext x='256' y='300' font-size='220' text-anchor='middle'%3E🐝%3C/text%3E%3Ccircle cx='256' cy='256' r='245' fill='none' stroke='%23C47D0E' stroke-width='5' opacity='.6'/%3E%3C/svg%3E">
+<!-- Manifest injected by script below -->
+<link id="pwa-manifest" rel="manifest">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Playfair+Display:wght@700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--brown);min-height:100vh;}
+input,select,textarea,button{font-family:'Nunito',sans-serif;}
+input[type=range]{accent-color:var(--primary);width:100%;}
+input[type=checkbox]{accent-color:var(--primary);cursor:pointer;}
+textarea{resize:vertical;}
+button{cursor:pointer;}
+.hidden{display:none!important;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+.modal-box{background:var(--white);border-radius:18px;padding:28px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px 24px;}
+.btn{font-family:'Nunito',sans-serif;font-weight:700;font-size:14px;padding:10px 22px;border-radius:10px;border:none;cursor:pointer;transition:all 0.2s;display:inline-block;text-align:center;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-secondary{background:var(--white);color:var(--brown);border:1.5px solid var(--border);}
+.btn-success{background:var(--success);color:#fff;}
+.btn-danger{background:#E8604C;color:#fff;}
+.btn-small{font-size:12px;padding:6px 14px;}
+.btn:disabled{opacity:0.45;cursor:not-allowed;}
+.inp{font-family:'Nunito',sans-serif;font-size:14px;padding:9px 13px;border-radius:9px;width:100%;border:1.5px solid var(--border);background:var(--cream);color:var(--brown);outline:none;}
+.inp:focus{border-color:var(--primary);}
+.lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;}
+.sec-head{font-family:'Playfair Display',serif;font-size:20px;color:var(--brown);margin-bottom:14px;}
+.seg-ctrl{display:flex;background:var(--sand);border-radius:10px;padding:3px;gap:2px;width:fit-content;}
+.seg-btn{font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;border:none;cursor:pointer;background:transparent;color:var(--muted);transition:all 0.2s;}
+.seg-btn.active{background:var(--white);color:var(--brown);box-shadow:0 1px 4px rgba(0,0,0,0.12);}
+.radio-opt{padding:12px 14px;border-radius:10px;cursor:pointer;border:1.5px solid var(--border);background:var(--white);transition:all 0.2s;margin-bottom:8px;}
+.radio-opt.active{border-color:var(--primary);}
+.radio-dot{width:15px;height:15px;border-radius:50%;border:2px solid var(--border);background:transparent;display:inline-block;vertical-align:middle;margin-right:8px;transition:all 0.2s;flex-shrink:0;}
+.radio-opt.active .radio-dot{border-color:var(--primary);background:var(--primary);}
+.progress-bar{height:10px;background:var(--sandD);border-radius:5px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:5px;transition:width 0.5s ease;}
+.step-bar{display:flex;align-items:center;justify-content:center;gap:0;overflow-x:auto;padding-bottom:8px;margin-bottom:22px;}
+.step-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;transition:all 0.3s;flex-shrink:0;}
+.step-line{width:34px;height:2px;flex-shrink:0;transition:background 0.3s;}
+.step-item{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.step-label{font-size:9px;font-weight:500;color:var(--muted);white-space:nowrap;}
+.step-label.active{font-weight:700;color:var(--brown);}
+.tab-btn{font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;padding:10px 16px;border:none;background:transparent;cursor:pointer;color:var(--muted);border-bottom:2.5px solid transparent;transition:all 0.2s;white-space:nowrap;}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);}
+.checklist-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.trip-type-opt{padding:16px 18px;border-radius:12px;cursor:pointer;border:2px solid var(--border);background:var(--white);transition:all 0.2s;margin-bottom:10px;}
+.trip-type-opt.active{border-color:var(--primary);background:var(--sand);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.stat-card{text-align:center;background:var(--sand);border-radius:12px;padding:14px 8px;}
+.footer-txt{text-align:center;font-size:12px;color:var(--muted);margin-top:40px;padding-bottom:20px;}
+.tag-custom{font-size:10px;background:var(--sand);border-radius:4px;padding:2px 6px;color:var(--muted);font-weight:700;}
+.notice{background:var(--sand);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:16px;}
+.install-banner{position:fixed;bottom:0;left:0;right:0;background:var(--brown);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:300;font-family:'Nunito',sans-serif;box-shadow:0 -4px 20px rgba(0,0,0,0.2);transform:translateY(100%);transition:transform 0.4s ease;}
+.install-banner.visible{transform:translateY(0);}
+.install-banner p{font-size:14px;font-weight:600;margin:0;line-height:1.4;}
+.install-banner small{font-size:11px;opacity:0.75;display:block;margin-top:2px;}
+.install-banner-btns{display:flex;gap:8px;flex-shrink:0;}
+@supports(padding:max(0px)){body{padding-bottom:env(safe-area-inset-bottom);}}
+.row-between{display:flex;justify-content:space-between;align-items:center;}
+.gap-10{gap:10px;}
+.data-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;}
+@media(max-width:480px){.grid-2{grid-template-columns:1fr;}.grid-3{grid-template-columns:1fr 1fr;}}
+@media print{
+  .no-print{display:none!important;}
+  body{background:#fff!important;}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  @page{margin:18mm;}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════
+const STORAGE_KEY = 'BOB_vacation_v1';
+const THEMES = {
+  honey:    {name:"🍯 Honey",    primary:"#F5A623",dark:"#C47D0E",accent:"#4A8FD4",cream:"#FFFBF0",sand:"#F5E8C8",sandD:"#EDD9A3",border:"#E8D9B8",success:"#3D8B5E",brown:"#3D2208",muted:"#9B8470",white:"#FFFFFF"},
+  ocean:    {name:"🌊 Ocean",    primary:"#0EA5E9",dark:"#0369A1",accent:"#0891B2",cream:"#F0F9FF",sand:"#E0F2FE",sandD:"#BAE6FD",border:"#BAE6FD",success:"#059669",brown:"#0C4A6E",muted:"#5E8FA8",white:"#FFFFFF"},
+  forest:   {name:"🌿 Forest",   primary:"#22C55E",dark:"#15803D",accent:"#84CC16",cream:"#F0FDF4",sand:"#DCFCE7",sandD:"#BBF7D0",border:"#BBF7D0",success:"#16A34A",brown:"#14532D",muted:"#4D8862",white:"#FFFFFF"},
+  sunset:   {name:"🌅 Sunset",   primary:"#F97316",dark:"#C2410C",accent:"#F59E0B",cream:"#FFF7ED",sand:"#FFEDD5",sandD:"#FED7AA",border:"#FED7AA",success:"#B45309",brown:"#431407",muted:"#97674A",white:"#FFFFFF"},
+  lavender: {name:"💜 Lavender", primary:"#A855F7",dark:"#7E22CE",accent:"#EC4899",cream:"#FAF5FF",sand:"#F3E8FF",sandD:"#E9D5FF",border:"#E9D5FF",success:"#6D28D9",brown:"#3B0764",muted:"#7B5E9A",white:"#FFFFFF"},
+  rose:     {name:"🌸 Rose",     primary:"#F43F5E",dark:"#BE123C",accent:"#FB923C",cream:"#FFF1F2",sand:"#FFE4E6",sandD:"#FECDD3",border:"#FECDD3",success:"#15803D",brown:"#4C0519",muted:"#9A5468",white:"#FFFFFF"},
+  slate:    {name:"🩵 Slate",    primary:"#64748B",dark:"#334155",accent:"#0EA5E9",cream:"#F8FAFC",sand:"#F1F5F9",sandD:"#E2E8F0",border:"#E2E8F0",success:"#15803D",brown:"#0F172A",muted:"#64748B",white:"#FFFFFF"},
+  midnight: {name:"🌙 Midnight", primary:"#6366F1",dark:"#3730A3",accent:"#8B5CF6",cream:"#EEF2FF",sand:"#E0E7FF",sandD:"#C7D2FE",border:"#C7D2FE",success:"#4338CA",brown:"#1E1B4B",muted:"#6366A8",white:"#FFFFFF"},
+};
+const BREAKDOWN_FIELDS = {
+  cruise:[{key:"cruisePackage",label:"🚢 Cruise Package"},{key:"portExcursions",label:"⚓ Port Excursions"},{key:"gratuities",label:"💝 Gratuities / Tips"},{key:"specialtyDining",label:"🍽️ Specialty Dining (add-ons)"},{key:"drinksPackage",label:"🍹 Drinks Package"},{key:"spa",label:"💆 Spa & Wellness"},{key:"rideshare",label:"🚕 Rideshare / Taxi"},{key:"transportToPort",label:"🚌 Transport to/from Port"},{key:"travelInsurance",label:"🛡️ Travel Insurance"},{key:"other",label:"📦 Other"}],
+  allInclusive:[{key:"flights",label:"✈️ Flights"},{key:"resortPackage",label:"🏖️ All-Inclusive Resort Package"},{key:"excursions",label:"🎡 Excursions & Activities"},{key:"gratuities",label:"💝 Gratuities & Tips"},{key:"rideshare",label:"🚕 Rideshare / Taxi / Public Transit"},{key:"airportTransfer",label:"🚌 Airport Transfer"},{key:"upgrades",label:"⭐ Room Upgrades / Add-ons"},{key:"travelInsurance",label:"🛡️ Travel Insurance"},{key:"other",label:"📦 Other"}],
+  roadtrip:[{key:"gas",label:"⛽ Gas / Fuel"},{key:"lodging",label:"🏨 Lodging / Camping"},{key:"food",label:"🍔 Food & Drink"},{key:"activities",label:"🎡 Activities & Attractions"},{key:"vehicleRental",label:"🚗 Vehicle Rental"},{key:"tollsParking",label:"🅿️ Tolls & Parking"},{key:"rideshare",label:"🚕 Rideshare / Taxi"},{key:"travelInsurance",label:"🛡️ Travel Insurance"},{key:"other",label:"📦 Other"}],
+  flying:[{key:"flights",label:"✈️ Flights"},{key:"accommodation",label:"🏨 Hotel / Lodging"},{key:"food",label:"🍽️ Food & Drink"},{key:"activities",label:"🎡 Activities & Attractions"},{key:"rideshare",label:"🚕 Rideshare / Taxi / Public Transit"},{key:"travelInsurance",label:"🛡️ Travel Insurance"},{key:"other",label:"📦 Other"}]
+};
+const GROUP_CHECKLIST = {
+  cruise:[{key:"cruiseBooked",label:"Cruise booked & confirmed",hasCost:true},{key:"cabinAssigned",label:"Cabin assigned",hasCost:false},{key:"diningBooked",label:"Dining reservations made",hasCost:false},{key:"excursionsBooked",label:"Port excursions booked",hasCost:true},{key:"drinksPackage",label:"Drinks package purchased",hasCost:true},{key:"gratuities",label:"Gratuities prepaid",hasCost:true},{key:"transportPort",label:"Transport to/from port arranged",hasCost:true},{key:"travelInsurance",label:"Travel insurance purchased",hasCost:true}],
+  allInclusive:[{key:"resortBooked",label:"Resort booked & confirmed",hasCost:true},{key:"airportTransfer",label:"Airport transfer arranged",hasCost:true},{key:"excursionsBooked",label:"Excursions booked",hasCost:true},{key:"upgradesBooked",label:"Room upgrades / add-ons booked",hasCost:true},{key:"travelInsurance",label:"Travel insurance purchased",hasCost:true}],
+  roadtrip:[{key:"routePlanned",label:"Route fully planned",hasCost:false},{key:"vehicleReady",label:"Vehicle ready / rental confirmed",hasCost:true},{key:"lodgingBooked",label:"All lodging booked",hasCost:true},{key:"activitiesBooked",label:"Key activities booked",hasCost:true},{key:"emergencyKit",label:"Emergency kit prepared",hasCost:false}],
+  flying:[{key:"hotelBooked",label:"Hotel / lodging booked",hasCost:true},{key:"airportTransfer",label:"Airport transfer arranged",hasCost:true},{key:"activitiesBooked",label:"Key activities booked",hasCost:true},{key:"travelInsurance",label:"Travel insurance purchased",hasCost:true}]
+};
+const TRAVELER_CHECKLIST = {
+  cruise:[{key:"flightBooked",label:"Flight to port booked (if applicable)",hasCost:true},{key:"passportValid",label:"Passport valid (6+ months remaining)",hasCost:false},{key:"medicalDocs",label:"Medical / vaccination docs ready",hasCost:false},{key:"packingDone",label:"Packing complete",hasCost:false}],
+  allInclusive:[{key:"flightBooked",label:"Flight booked & confirmed",hasCost:true},{key:"seatSelected",label:"Seat selected",hasCost:false},{key:"passportValid",label:"Passport valid (6+ months remaining)",hasCost:false},{key:"packingDone",label:"Packing complete",hasCost:false}],
+  roadtrip:[{key:"idReady",label:"ID / driver's license ready",hasCost:false},{key:"packingDone",label:"Packing complete",hasCost:false}],
+  flying:[{key:"flightBooked",label:"Flight booked & confirmed",hasCost:true},{key:"seatSelected",label:"Seat selected",hasCost:false},{key:"passportId",label:"Passport / ID valid",hasCost:false},{key:"packingDone",label:"Packing complete",hasCost:false}]
+};
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+const uid = () => Math.random().toString(36).slice(2,9);
+const fmt = n => (n===""||n===null||n===undefined||isNaN(Number(n)))?"—":new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(Number(n));
+const pct = (a,b) => (!b||!a)?0:Math.min(100,Math.round((Number(a)/Number(b))*100));
+const daysUntil = d => !d?null:Math.ceil((new Date(d)-new Date())/86400000);
+const getBT = t => t.tripType==="cruise"?"cruise":t.tripType==="flying"&&t.isAllInclusive?"allInclusive":t.tripType==="roadtrip"?"roadtrip":"flying";
+const bdTotal = t => (BREAKDOWN_FIELDS[getBT(t)]||[]).reduce((s,f)=>s+(Number(t.breakdown[f.key])||0),0);
+const esc = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const today = () => new Date().toISOString().slice(0,10);
+
+const newVacation = () => ({
+  id:uid(),name:"",destination:"",dateMode:"open",departureDate:"",returnDate:"",timelineGoal:"",
+  planning:"individual",groupSize:2,trackingMode:"full",portionPct:50,travelers:[],
+  tripType:"flying",isAllInclusive:false,estimatedTotal:"",breakdown:{},
+  payment:{method:"saving",apr:"",payingForGroup:false,monthlyPayment:"",currentSaved:""},
+  paymentLogs:[],checklist:{},travelerChecklists:{},customChecklistItems:[],notes:""
+});
+
+const initChecklists = trip => {
+  const bt=getBT(trip);
+  const gc={};(GROUP_CHECKLIST[bt]||[]).forEach(i=>{gc[i.key]=false;if(i.hasCost)gc[i.key+"_cost"]="";});
+  const tc={};
+  const travelers=trip.planning==="group"?[{id:"me"},...trip.travelers]:[{id:"me"}];
+  travelers.forEach(t=>{const ch={};(TRAVELER_CHECKLIST[bt]||[]).forEach(i=>{ch[i.key]=false;if(i.hasCost)ch[i.key+"_cost"]="";});tc[t.id]=ch;});
+  return {checklist:gc,travelerChecklists:tc};
+};
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let S = {
+  screen:"welcome", // welcome | setup | dashboard
+  theme:"honey",
+  trips:[],
+  activeId:null,
+  activeTab:"overview",
+  viewMode:"group",
+  wizard:newVacation(),
+  wizardStep:1,
+  modal:null // {type, ...data}
+};
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw){const d=JSON.parse(raw);Object.assign(S,d);S.modal=null;}
+  }catch(e){console.warn("Load failed",e);}
+}
+
+function saveState(){
+  try{
+    const {modal,...rest}=S;
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(rest));
+  }catch(e){console.warn("Save failed",e);}
+}
+
+function setThemeCSSVars(key){
+  const T=THEMES[key]||THEMES.honey;
+  const r=document.documentElement.style;
+  r.setProperty('--primary',T.primary);r.setProperty('--dark',T.dark);r.setProperty('--accent',T.accent);
+  r.setProperty('--cream',T.cream);r.setProperty('--sand',T.sand);r.setProperty('--sandD',T.sandD);
+  r.setProperty('--border',T.border);r.setProperty('--success',T.success);r.setProperty('--brown',T.brown);
+  r.setProperty('--muted',T.muted);r.setProperty('--white',T.white||'#FFFFFF');
+}
+
+// ══════════════════════════════════════════════════════
+// DATA PERSISTENCE UTILS
+// ══════════════════════════════════════════════════════
+function exportJSON(){
+  const {modal,...data}=S;
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=`BeeOnBudget-Vacation-backup-${today()}.json`;a.click();
+}
+
+function importJSON(){
+  const inp=document.createElement("input");inp.type="file";inp.accept=".json";
+  inp.onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=ev=>{
+      try{
+        const d=JSON.parse(ev.target.result);
+        Object.assign(S,d);S.modal=null;
+        saveState();render();
+        alert("✅ Data imported successfully!");
+      }catch{alert("❌ Could not read that file. Make sure it's a valid Bee on Budget backup.");}
+    };r.readAsText(f);
+  };inp.click();
+}
+
+function saveAppWithData(){
+  // Get current HTML source
+  const src=document.documentElement.outerHTML;
+  // Inject current state as a seed after the STORAGE_KEY definition
+  const {modal,...data}=S;
+  const seedScript=`\n<script>window.__BOB_SEED__=${JSON.stringify(data)};<\/script>`;
+  const injected=src.replace('</head>',seedScript+'</head>');
+  const blob=new Blob([injected],{type:"text/html"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=`BeeOnBudget-Vacation-${today()}.html`;a.click();
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER ENGINE (simple innerHTML-based)
+// ══════════════════════════════════════════════════════
+function render(){
+  setThemeCSSVars(S.theme);
+  const app=document.getElementById("app");
+  if(S.screen==="welcome") app.innerHTML=renderWelcome();
+  else if(S.screen==="setup") app.innerHTML=renderSetup();
+  else if(S.screen==="dashboard") app.innerHTML=renderDashboard();
+  bindEvents();
+}
+
+// ══════════════════════════════════════════════════════
+// SHARED HTML HELPERS
+// ══════════════════════════════════════════════════════
+const logoHTML=(big=false)=>`
+  <div style="text-align:center">
+    <div style="display:flex;align-items:center;justify-content:center;gap:${big?12:8}px">
+      <span style="font-size:${big?42:26}px">🐝</span>
+      <span style="font-family:'Playfair Display',serif;font-weight:700;font-size:${big?36:22}px;color:var(--brown)">Bee on Budget</span>
+    </div>
+    <div style="font-family:'Dancing Script',cursive;font-weight:600;font-size:${big?22:16}px;color:var(--primary);margin-top:2px">Vacation Plans</div>
+  </div>`;
+const footerHTML=`<p class="footer-txt">Conceived &amp; designed by 🐝 Melissa @ The Honeybee Hive</p>`;
+const inpHTML=(id,val,placeholder,type="text",extra="")=>`<input id="${id}" class="inp" type="${type}" value="${esc(val||"")}" placeholder="${esc(placeholder)}"${extra}>`;
+const lblHTML=t=>`<div class="lbl">${t}</div>`;
+const btnHTML=(id,label,variant="primary",small=false,disabled=false,extra="")=>`<button id="${id}" class="btn btn-${variant}${small?" btn-small":""}"${disabled?" disabled":""}${extra}>${label}</button>`;
+const cardHTML=(content,style="")=>`<div class="card"${style?` style="${style}"`:""}>${content}</div>`;
+const sectionHead=t=>`<h3 class="sec-head">${t}</h3>`;
+
+function segCtrl(name,options,value){
+  return `<div class="seg-ctrl">${options.map(o=>`<button class="seg-btn${o.value===value?" active":""}" data-seg="${name}" data-val="${o.value}">${o.label}</button>`).join("")}</div>`;
+}
+
+function radioList(name,options,value){
+  return options.map(o=>`
+    <div class="radio-opt${o.value===value?" active":""}" data-radio="${name}" data-val="${o.value}">
+      <div style="display:flex;align-items:center"><span class="radio-dot"></span><strong style="font-size:14px">${o.title}</strong></div>
+      ${o.desc?`<p style="font-size:12px;color:var(--muted);margin:4px 0 0 23px">${o.desc}</p>`:""}
+    </div>`).join("");
+}
+
+// ══════════════════════════════════════════════════════
+// WELCOME SCREEN
+// ══════════════════════════════════════════════════════
+function renderWelcome(){
+  const hasData=S.trips.length>0;
+  return `
+  <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px">
+    ${logoHTML(true)}
+    <p style="font-size:16px;color:var(--muted);margin-top:22px;line-height:1.7;font-style:italic;text-align:center;max-width:440px">
+      "A dream vacation starts with a plan. Let's build yours — one destination at a time."
+    </p>
+    <div class="grid-3" style="margin:28px 0;max-width:480px;width:100%">
+      ${[["🗺️","Bucket list &amp; goals"],["👥","Group or solo"],["💳","Payment planning"],["📋","Booking checklists"],["🖨️","Print receipts"],["💾","Auto-saves locally"]].map(([i,l])=>`
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center">
+          <div style="font-size:22px;margin-bottom:5px">${i}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--brown)">${l}</div>
+        </div>`).join("")}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+      <button id="btn-start" class="btn btn-primary" style="font-size:16px;padding:14px 40px;border-radius:14px">Start Planning 🗺️</button>
+      ${hasData?`<button id="btn-go-dashboard" class="btn btn-secondary" style="font-size:14px">Back to My Trips →</button>`:""}
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button id="btn-import" class="btn btn-secondary btn-small">📂 Import Backup</button>
+        <button id="btn-open-guide" class="btn btn-secondary btn-small">📖 User Guide</button>
+      </div>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:16px;text-align:center">
+      Your data auto-saves in this browser. Use <strong>Import/Export</strong> in Settings to back up across devices.
+    </p>
+    ${footerHTML}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// SETUP WIZARD
+// ══════════════════════════════════════════════════════
+const STEP_LABELS=["Destination","Travelers","Group","Trip Type","Costs","Payment"];
+function getStepNums(isGroup){return isGroup?[1,2,3,4,5,6]:[1,2,4,5,6];}
+
+function renderStepBar(step,isGroup){
+  const nums=getStepNums(isGroup);
+  const labels=isGroup?STEP_LABELS:STEP_LABELS.filter((_,i)=>i!==2);
+  const ci=nums.indexOf(step);
+  return `<div class="step-bar">${labels.map((lbl,i)=>{
+    const done=i<ci,active=i===ci;
+    return `<div style="display:flex;align-items:center">
+      <div class="step-item">
+        <div class="step-dot" style="background:${done?"var(--success)":active?"var(--primary)":"var(--border)"};color:${done||active?"#fff":"var(--muted)"}">${done?"✓":i+1}</div>
+        <span class="step-label${active?" active":""}">${lbl}</span>
+      </div>
+      ${i<labels.length-1?`<div class="step-line" style="background:${done?"var(--success)":"var(--border)"}"></div>`:""}
+    </div>`;}).join("")}</div>`;
+}
+
+function renderSetupStep(){
+  const w=S.wizard;
+  switch(S.wizardStep){
+    case 1: return renderStep1(w);
+    case 2: return renderStep2(w);
+    case 3: return renderStep3(w);
+    case 4: return renderStep4(w);
+    case 5: return renderStep5(w);
+    case 6: return renderStep6(w);
+    default: return "<p>Unknown step</p>";
+  }
+}
+
+function renderSetup(){
+  const w=S.wizard;
+  const isGroup=w.planning==="group";
+  const nums=getStepNums(isGroup);
+  const ci=nums.indexOf(S.wizardStep);
+  const isFirst=ci===0,isLast=ci===nums.length-1;
+  const canNext=S.wizardStep===1?w.name.trim().length>0:true;
+  return `
+  <div style="min-height:100vh;background:var(--cream)">
+    <div style="max-width:600px;margin:0 auto;padding:32px 20px 60px">
+      <div style="text-align:center;margin-bottom:24px">${logoHTML()}</div>
+      ${renderStepBar(S.wizardStep,isGroup)}
+      <div class="card">${renderSetupStep()}</div>
+      <div style="display:flex;justify-content:space-between;margin-top:20px">
+        ${!isFirst?btnHTML("btn-wiz-back","← Back","secondary"):"<div></div>"}
+        ${isLast?btnHTML("btn-wiz-finish","Launch Dashboard 🚀","success"):btnHTML("btn-wiz-next","Next →","primary",false,!canNext)}
+      </div>
+      ${footerHTML}
+    </div>
+  </div>`;
+}
+
+function renderStep1(w){
+  return `
+  ${sectionHead("Where do you want to go? ✈️")}
+  <p style="font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6">Name your dream destination. Dates are optional — this works as a bucket list or savings goal too!</p>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div class="grid-2">
+      <div>${lblHTML("Trip Name *")}${inpHTML("w-name",w.name,"e.g. Japan Adventure")}</div>
+      <div>${lblHTML("Destination")}${inpHTML("w-dest",w.destination,"e.g. Tokyo, Japan")}</div>
+    </div>
+    <div>${lblHTML("Timeline")}${segCtrl("dateMode",[{value:"open",label:"Open / TBD"},{value:"goal",label:"Goal"},{value:"dates",label:"Specific Dates"}],w.dateMode)}</div>
+    ${w.dateMode==="goal"?`<div>${lblHTML("Timeline Goal")}${inpHTML("w-goal",w.timelineGoal,'e.g. "Summer 2027"')}</div>`:""}
+    ${w.dateMode==="dates"?`<div class="grid-2"><div>${lblHTML("Departure")}${inpHTML("w-dep",w.departureDate,"","date")}</div><div>${lblHTML("Return")}${inpHTML("w-ret",w.returnDate,"","date")}</div></div>`:""}
+    <div>${lblHTML("Notes (optional)")}<textarea id="w-notes" class="inp" rows="2" placeholder="Visa requirements, wishlist, things to research...">${esc(w.notes)}</textarea></div>
+  </div>`;
+}
+
+function renderStep2(w){
+  return `
+  ${sectionHead("Who's traveling? 👥")}
+  <p style="font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6">Solo adventure or heading out with a group?</p>
+  <div style="margin-bottom:16px">${segCtrl("planning",[{value:"individual",label:"Just Me"},{value:"group",label:"Group"}],w.planning)}</div>
+  ${w.planning==="group"?`
+    <div style="margin-bottom:16px">
+      ${lblHTML("Number of Travelers (including you)")}
+      <div style="display:flex;align-items:center;gap:12px">
+        <button id="btn-gs-dec" class="btn btn-secondary" style="width:32px;height:32px;padding:0;border-radius:50%;font-size:18px">−</button>
+        <span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--brown);min-width:28px;text-align:center">${w.groupSize}</span>
+        <button id="btn-gs-inc" class="btn btn-secondary" style="width:32px;height:32px;padding:0;border-radius:50%;font-size:18px">+</button>
+        <span style="font-size:13px;color:var(--muted)">travelers</span>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      ${lblHTML("Budget Tracking Mode")}
+      ${radioList("trackingMode",[{value:"full",title:"Full Group Cost",desc:"Track the total for everyone — ideal for shared bookings."},{value:"portion",title:"My Portion Only",desc:"Track just your personal share of the expenses."}],w.trackingMode)}
+    </div>
+    ${w.trackingMode==="portion"?`
+      <div style="margin-top:12px">
+        ${lblHTML("Your Share (%)")}
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="w-portion" min="1" max="100" step="1" value="${w.portionPct}" style="flex:1;accent-color:var(--primary)">
+          <span id="portion-display" style="font-weight:700;color:var(--primary);min-width:40px;font-size:15px">${w.portionPct}%</span>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-top:4px">Equal split for ${w.groupSize}: ${Math.round(100/w.groupSize)}% each.</p>
+      </div>`:""}
+  `:`<div class="notice">🎒 Solo traveler — you'll skip the group configuration step.</div>`}`;
+}
+
+function renderStep3(w){
+  if(w.planning==="individual") return `${sectionHead("Solo Trip Confirmed! 🎒")}<div class="notice" style="text-align:center;padding:24px"><div style="font-size:36px;margin-bottom:8px">🧳</div><p>You're traveling solo — no group configuration needed.<br>Click <strong>Next</strong> to choose your trip type.</p></div>`;
+  const remaining=w.groupSize-1-w.travelers.length;
+  return `
+  ${sectionHead("Add Your Travelers 👥")}
+  <p style="font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6">Add each person. Use a placeholder if not yet confirmed — each gets their own checklist.</p>
+  <div class="notice"><strong style="color:var(--brown)">You</strong> — Traveler 1 (automatically included)</div>
+  <div id="travelers-list" style="display:flex;flex-direction:column;gap:8px">
+    ${w.travelers.map((t,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--white)">
+        <span style="font-size:18px;flex-shrink:0">👤</span>
+        <input class="inp traveler-name" data-tid="${t.id}" style="border:none;background:transparent;padding:0 4px;flex:1" value="${esc(t.name)}" placeholder="Traveler ${i+2} (e.g. &quot;Sarah&quot;)">
+        <label style="display:flex;align-items:center;gap:5px;flex-shrink:0;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap">
+          <input type="checkbox" class="traveler-confirmed" data-tid="${t.id}" ${t.confirmed?"checked":""}> Confirmed
+        </label>
+        <button class="btn-remove-traveler" data-tid="${t.id}" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;flex-shrink:0">×</button>
+      </div>`).join("")}
+  </div>
+  ${remaining>0?`<button id="btn-add-traveler" style="margin-top:10px;width:100%;padding:12px;border:1.5px dashed var(--primary);border-radius:10px;background:none;cursor:pointer;font-size:14px;font-weight:700;color:var(--primary);font-family:'Nunito',sans-serif">+ Add Traveler ${w.travelers.length+2} of ${w.groupSize}</button>`:`<p style="font-size:12px;color:var(--success);margin-top:8px">✓ All ${w.groupSize} travelers added!</p>`}`;
+}
+
+function renderStep4(w){
+  return `
+  ${sectionHead("How are you getting there? 🗺️")}
+  <p style="font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6">This tailors your cost breakdown and booking checklist to your experience.</p>
+  ${[{v:"flying",l:"✈️ Flying",d:"Booking flights to a destination"},{v:"cruise",l:"🚢 Cruise",d:"All-aboard cruise vacation"},{v:"roadtrip",l:"🚗 Road Trip",d:"Hitting the open road!"}].map(t=>`
+    <div class="trip-type-opt${w.tripType===t.v?" active":""}" data-triptype="${t.v}">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:16px;height:16px;border-radius:50%;border:2px solid ${w.tripType===t.v?"var(--primary)":"var(--border)"};background:${w.tripType===t.v?"var(--primary)":"transparent"};flex-shrink:0"></div>
+        <strong style="font-size:15px;color:var(--brown)">${t.l}</strong>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:4px 0 0 26px">${t.d}</p>
+    </div>`).join("")}
+  ${w.tripType==="flying"?`
+    <div class="notice">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+        <input type="checkbox" id="w-allinclusive" ${w.isAllInclusive?"checked":""} style="width:18px;height:18px;margin-top:2px;flex-shrink:0">
+        <div>
+          <strong style="font-size:14px;color:var(--brown)">🏖️ Flying to an All-Inclusive Resort</strong>
+          <p style="font-size:12px;color:var(--muted);margin-top:2px">Food &amp; drink costs will be treated as gratuities and add-ons — most meals are included in your resort package.</p>
+        </div>
+      </label>
+    </div>`:""}`;
+}
+
+function renderStep5(w){
+  const bt=getBT(w);
+  const fields=BREAKDOWN_FIELDS[bt]||[];
+  const total=fields.reduce((s,f)=>s+(Number(w.breakdown[f.key])||0),0);
+  const budgetTotal=Number(w.estimatedTotal)||0;
+  const notes={cruise:"💡 Cruise tip: Most food & drink is included — this breakdown covers gratuities, specialty dining, drinks packages, and add-ons.",allInclusive:"🏖️ All-Inclusive tip: Meals are included. Gratuities cover staff tips; excursions and upgrades are common extras.",roadtrip:"🚗 Road trip tip: Gas and lodging are typically 60–70% of the total. Don't forget tolls and parking!",flying:"✈️ Flying tip: Flights + accommodation are usually 60–70% of total trip cost."}[bt];
+  return `
+  ${sectionHead("Cost Breakdown 💰")}
+  ${notes?`<div class="notice">${notes}</div>`:""}
+  <div style="margin-bottom:14px">
+    ${lblHTML("Total Estimated Cost ($)")}${inpHTML("w-total",w.estimatedTotal,"Leave blank if unknown","number")}
+  </div>
+  <div class="grid-2">
+    ${fields.map(f=>`<div>${lblHTML(f.label)}<input class="inp breakdown-inp" data-key="${f.key}" type="number" value="${esc(w.breakdown[f.key]||"")}" placeholder="$0"></div>`).join("")}
+  </div>
+  ${total>0?`<div style="margin-top:16px;padding:12px 14px;background:var(--sand);border-radius:10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;font-weight:700;color:var(--muted)">Breakdown Total</span><span style="font-family:'Playfair Display',serif;font-weight:700;font-size:18px;color:${total>budgetTotal&&budgetTotal>0?"var(--coral)":"var(--primary)"}">${fmt(total)}</span></div>`:""}
+  ${total>budgetTotal&&budgetTotal>0?`<p style="font-size:12px;color:var(--coral);margin-top:8px">⚠️ Breakdown exceeds your estimated budget by ${fmt(total-budgetTotal)}.</p>`:""}`;
+}
+
+function renderStep6(w){
+  const daysLeft=daysUntil(w.departureDate);
+  const monthsLeft=daysLeft?Math.max(1,Math.ceil(daysLeft/30.44)):null;
+  const total=Number(w.estimatedTotal)||bdTotal(w)||0;
+  return `
+  ${sectionHead("How will you pay? 💳")}
+  <p style="font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6">This helps calculate interest and build a savings plan tailored to your trip timeline.</p>
+  ${radioList("paymentMethod",[{value:"saving",title:"💰 Saving Up",desc:"I'll save money ahead of time before paying."},{value:"credit",title:"💳 Credit Card",desc:"Paying with a credit card — upfront or over time."},{value:"plan",title:"📅 Payment Plan",desc:"The vendor offers a payment plan (cruise lines, resorts, etc.)."}],w.payment.method)}
+  ${w.payment.method==="credit"?`
+    <div style="padding:14px;background:var(--sand);border-radius:12px;margin-top:8px;display:flex;flex-direction:column;gap:12px">
+      <div>${lblHTML("Credit Card APR (%)")}${inpHTML("w-apr",w.payment.apr,"e.g. 24.99","number")}</div>
+      ${w.planning==="group"?`<label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+        <input type="checkbox" id="w-payforgroup" ${w.payment.payingForGroup?"checked":""} style="width:16px;height:16px;margin-top:2px;flex-shrink:0">
+        <div><strong style="font-size:14px;color:var(--brown)">Paying for the group, to be reimbursed</strong>
+        <p style="font-size:12px;color:var(--muted);margin-top:2px">Dashboard will track interest and show reimbursement amounts per traveler.</p></div>
+      </label>`:""}
+      ${w.payment.apr&&total>0&&monthsLeft?`<div style="background:var(--white);border-radius:10px;padding:12px 14px;font-size:13px">
+        <div style="font-weight:700;color:var(--brown);margin-bottom:6px">📊 Interest Preview</div>
+        <div style="color:var(--muted)">At ${w.payment.apr}% APR over ~${monthsLeft} months:<br>
+        <strong style="color:var(--primary);font-size:16px">${fmt(Math.round(total*(Number(w.payment.apr)/100)*(monthsLeft/12)))}</strong> estimated interest</div>
+      </div>`:""}
+    </div>`:""}
+  ${w.payment.method==="plan"?`<div style="padding:14px;background:var(--sand);border-radius:12px;margin-top:8px">${lblHTML("Monthly Payment Amount ($)")}${inpHTML("w-monthly",w.payment.monthlyPayment,"e.g. 250","number")}</div>`:""}
+  ${w.payment.method==="saving"?`<div style="padding:14px;background:var(--sand);border-radius:12px;margin-top:8px">
+    ${lblHTML("Amount Already Saved ($)")}${inpHTML("w-cursaved",w.payment.currentSaved,"0","number")}
+    ${total>0&&daysLeft&&daysLeft>0?(()=>{const rem=Math.max(0,total-Number(w.payment.currentSaved||0));const weeks=Math.ceil(daysLeft/7);const months=Math.ceil(daysLeft/30.44);return `<div style="background:var(--white);border-radius:10px;padding:12px 14px;font-size:13px;margin-top:10px"><div style="font-weight:700;color:var(--brown);margin-bottom:6px">📅 Savings Plan Preview</div><div style="color:var(--muted)">Remaining: <strong style="color:var(--primary)">${fmt(rem)}</strong></div>${weeks>4?`<div style="color:var(--muted);margin-top:4px">Per Week: <strong style="color:var(--brown)">${fmt(Math.ceil(rem/weeks))}</strong></div>`:""}<div style="color:var(--muted);margin-top:4px">Per Month: <strong style="color:var(--brown)">${fmt(Math.ceil(rem/months))}</strong></div></div>`;})():""}
+  </div>`:""}`;
+}
+
+// ══════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════
+function renderDashboard(){
+  const trip=S.trips.find(t=>t.id===S.activeId)||S.trips[0];
+  if(!trip) return `<div style="padding:60px;text-align:center;color:var(--muted)">No trips. <button id="btn-new-trip" class="btn btn-primary">Start Planning</button></div>`;
+  const allTravelers=trip.planning==="group"?[{id:"me",name:"Me"},...trip.travelers]:[{id:"me",name:"Me"}];
+  const dateLabel=trip.dateMode==="dates"&&trip.departureDate?trip.departureDate+(trip.returnDate?` → ${trip.returnDate}`:""):trip.dateMode==="goal"&&trip.timelineGoal?`🎯 ${trip.timelineGoal}`:"Dates TBD";
+  const tripLabel=trip.tripType==="cruise"?"Cruise":trip.tripType==="roadtrip"?"Road Trip":trip.isAllInclusive?"All-Inclusive":"Flight";
+
+  const tripSelector=`<select id="trip-selector" style="font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;padding:8px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--cream);color:var(--brown);outline:none;cursor:pointer">
+    ${S.trips.map(t=>`<option value="${t.id}"${t.id===S.activeId?" selected":""}>${esc(t.name||"Unnamed Trip")}${t.destination?` — ${esc(t.destination)}`:""}</option>`).join("")}
+  </select>`;
+
+  const viewSelector=trip.planning==="group"?`<select id="view-selector" style="font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;padding:8px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--cream);color:var(--brown);outline:none;cursor:pointer">
+    <option value="group"${S.viewMode==="group"?" selected":""}>Full Group</option>
+    ${allTravelers.map(t=>`<option value="${t.id}"${S.viewMode===t.id?" selected":""}>${t.id==="me"?"My View":esc(t.name||"Unnamed")}</option>`).join("")}
+  </select>`:""
+
+  const tabs=["overview","checklist","payments","print","settings","help"];
+  const tabLabels=["Overview","Checklist","Payments","🖨️ Print","⚙️ Settings","📖 Guide"];
+
+  let tabContent="";
+  if(S.activeTab==="overview") tabContent=renderOverviewTab(trip,allTravelers);
+  else if(S.activeTab==="checklist") tabContent=renderChecklistTab(trip,allTravelers);
+  else if(S.activeTab==="payments") tabContent=renderPaymentsTab(trip,allTravelers);
+  else if(S.activeTab==="print") tabContent=renderPrintTab(trip,allTravelers);
+  else if(S.activeTab==="settings") tabContent=renderSettingsTab(trip,allTravelers);
+  else if(S.activeTab==="help") tabContent=renderHelpTab();
+
+  return `
+  <div style="min-height:100vh;background:var(--cream)">
+    <!-- Header -->
+    <div class="no-print" style="background:var(--white);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      ${logoHTML()}
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${tripSelector}${viewSelector}</div>
+    </div>
+    <!-- Trip Banner -->
+    <div class="no-print" style="background:var(--sand);border-bottom:1px solid var(--border);padding:10px 20px 0">
+      <div style="max-width:700px;margin:0 auto">
+        <div style="padding-bottom:12px">
+          <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--brown)">
+            ${esc(trip.name||"Unnamed Trip")}${trip.destination?`<span style="font-weight:400;color:var(--muted);font-size:14px;margin-left:8px">📍 ${esc(trip.destination)}</span>`:""}
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${esc(dateLabel)} · ${trip.planning==="group"?`${trip.groupSize} travelers`:"Solo"} · ${tripLabel}</div>
+        </div>
+        <div style="display:flex;gap:0;overflow-x:auto">
+          ${tabs.map((t,i)=>`<button class="tab-btn${S.activeTab===t?" active":""}" data-tab="${t}">${tabLabels[i]}</button>`).join("")}
+        </div>
+      </div>
+    </div>
+    <!-- Tab Content -->
+    <div style="max-width:700px;margin:0 auto;padding:24px 20px 60px">
+      ${tabContent}
+      ${footerHTML}
+    </div>
+    <!-- Modal -->
+    ${S.modal?renderModal(trip,allTravelers):""}
+  </div>`;
+}
+
+// ── Overview Tab ─────────────────────────────────────
+function renderOverviewTab(trip,allTravelers){
+  const bt=getBT(trip);
+  const fields=BREAKDOWN_FIELDS[bt]||[];
+  const bdt=fields.reduce((s,f)=>s+(Number(trip.breakdown[f.key])||0),0);
+  const total=Number(trip.estimatedTotal)||bdt||0;
+  const logs=trip.paymentLogs||[];
+  const totalLogged=logs.reduce((s,l)=>s+Number(l.amount),0);
+  const remaining=Math.max(0,total-totalLogged);
+  const progress=pct(totalLogged,total);
+  const daysLeft=daysUntil(trip.departureDate);
+  const weeksLeft=daysLeft?Math.ceil(daysLeft/7):null;
+  const monthsLeft=daysLeft?Math.ceil(daysLeft/30.44):null;
+  return `
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="grid-3">
+      ${[["🎯","Total Budget",fmt(total)],["🐝","Total Logged",fmt(totalLogged)],["📊","Remaining",remaining>0?fmt(remaining):"Goal Met! 🎉"]].map(([i,l,v])=>`
+        <div class="stat-card"><div style="font-size:20px;margin-bottom:4px">${i}</div>
+        <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:15px;color:var(--brown)">${v}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px">${l}</div></div>`).join("")}
+    </div>
+    ${total>0?`<div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px">Progress</span><span style="font-size:12px;color:var(--primary);font-weight:700">${progress}%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${progress}%;background:${progress>=100?"var(--success)":"var(--primary)"}"></div></div>
+    </div>`:""}
+    ${total>0&&remaining>0&&daysLeft&&daysLeft>28&&weeksLeft&&monthsLeft?`
+    ${cardHTML(`<div style="font-size:13px;font-weight:700;color:var(--brown);margin-bottom:10px">📅 Recommended Savings to Meet Your Goal</div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        ${weeksLeft>4?`<div><div style="font-size:11px;color:var(--muted)">Per Week</div><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--primary)">${fmt(Math.ceil(remaining/weeksLeft))}</div></div>`:""}
+        <div><div style="font-size:11px;color:var(--muted)">Per Month</div><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--primary)">${fmt(Math.ceil(remaining/monthsLeft))}</div></div>
+        <div><div style="font-size:11px;color:var(--muted)">Days Until Trip</div><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--brown)">${daysLeft}</div></div>
+      </div>`,"border-left:4px solid var(--primary)")}`:""}
+    ${bdt>0?cardHTML(`<div style="font-size:13px;font-weight:700;color:var(--brown);margin-bottom:12px">Cost Breakdown</div>
+      ${fields.filter(f=>Number(trip.breakdown[f.key])>0).map(f=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--muted)">${f.label}</span><span style="font-weight:700;color:var(--brown)">${fmt(trip.breakdown[f.key])}</span></div>`).join("")}
+      <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:14px"><span style="font-weight:700;color:var(--brown)">Total</span><span style="font-family:'Playfair Display',serif;font-weight:700;font-size:16px;color:var(--primary)">${fmt(bdt)}</span></div>`):""}
+    ${logs.length>0?cardHTML(`<div style="font-size:13px;font-weight:700;color:var(--brown);margin-bottom:10px">Recent Payments &amp; Savings</div>
+      ${logs.slice(-5).reverse().map(l=>{const t=allTravelers.find(x=>x.id===l.travelerId);return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <div><span style="font-weight:600;color:var(--brown)">${t?.id==="me"?"Me":esc(t?.name||"Unknown")}</span><span style="color:var(--muted);margin-left:6px">${l.type==="payment"?"💳 payment":"💰 savings"}</span>${l.note?`<span style="color:var(--muted);margin-left:6px;font-style:italic">· ${esc(l.note)}</span>`:""}<div style="font-size:11px;color:var(--muted)">${l.date}</div></div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-family:'Playfair Display',serif;font-weight:700;color:var(--success)">${fmt(l.amount)}</span><button class="btn-delete-log" data-lid="${l.id}" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px">×</button></div>
+      </div>`}).join("")}`):""}
+    <button id="btn-open-log-modal" class="btn btn-primary" style="width:100%">+ Log Payment or Savings 🐝</button>
+  </div>`;
+}
+
+// ── Checklist Tab ────────────────────────────────────
+function renderChecklistTab(trip,allTravelers){
+  const bt=getBT(trip);
+  const groupItems=GROUP_CHECKLIST[bt]||[];
+  const travelerItems=TRAVELER_CHECKLIST[bt]||[];
+  const customItems=trip.customChecklistItems||[];
+  const shownTravelers=S.viewMode==="group"?allTravelers:allTravelers.filter(t=>t.id===S.viewMode);
+  const customForT=tid=>customItems.filter(ci=>ci.assignTo==="all"||(Array.isArray(ci.assignTo)&&ci.assignTo.includes(tid)));
+
+  const checkRow=(checked,label,inputHtml,removeHtml="",isCustom=false)=>`
+    <div class="checklist-row">
+      ${inputHtml}
+      <div style="flex:1">
+        <span style="font-size:14px;color:${checked?"var(--muted)":"var(--brown)"};text-decoration:${checked?"line-through":"none"}">${label}</span>${isCustom?` <span class="tag-custom">custom</span>`:""}
+      </div>
+      ${checked?`<span style="font-size:14px;color:var(--success);flex-shrink:0">✓</span>`:""}
+      ${removeHtml}
+    </div>`;
+
+  return `
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <!-- Add custom item -->
+    ${cardHTML(`${sectionHead("➕ Add Custom Checklist Item")}
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>${lblHTML("Item Label")}<input id="new-item-label" class="inp" placeholder='e.g. "Bring snorkel gear" or "Confirm shore excursion"' value=""></div>
+        <div>${lblHTML("Assign To")}${segCtrl("assignTo",[{value:"all",label:"All Travelers"},{value:"specific",label:"Specific Travelers"}],(window._newItemAssignTo||"all"))}</div>
+        ${(window._newItemAssignTo||"all")==="specific"?`<div style="display:flex;flex-wrap:wrap;gap:8px" id="traveler-assign-sel">
+          ${allTravelers.map(t=>`<label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;cursor:pointer;border:1.5px solid ${(window._newItemTravelers||[]).includes(t.id)?"var(--primary)":"var(--border)"};background:${(window._newItemTravelers||[]).includes(t.id)?"var(--sand)":"var(--white)"};font-size:13px;font-weight:600;color:var(--brown)"><input type="checkbox" class="assign-traveler-chk" data-tid="${t.id}" ${(window._newItemTravelers||[]).includes(t.id)?"checked":""}>${t.id==="me"?"Me":esc(t.name||"Unnamed")}</label>`).join("")}
+        </div>`:""}
+        ${btnHTML("btn-add-custom-item","Add to Checklist","primary",false,false,' style="width:100%"')}
+      </div>`,"border-left:4px solid var(--primary)")}
+
+    <!-- Group bookings -->
+    ${S.viewMode==="group"&&groupItems.length>0?cardHTML(`
+      <div style="font-size:13px;font-weight:700;color:var(--brown);margin-bottom:4px">📋 Group / Shared Bookings</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Items that apply to the entire group</p>
+      ${groupItems.map(item=>{
+        const checked=!!(trip.checklist[item.key]);
+        const costInp=item.hasCost?`<div style="margin-top:5px"><input type="number" class="inp group-check-cost" data-key="${item.key}" value="${esc(trip.checklist[item.key+"_cost"]||"")}" placeholder="Final cost $" style="font-size:12px;padding:4px 8px;border-radius:6px;width:130px"></div>`:"";
+        return checkRow(checked,item.label,`<input type="checkbox" class="group-check" data-key="${item.key}" ${checked?"checked":""} style="margin-top:3px;width:16px;height:16px;flex-shrink:0">`,costInp);
+      }).join("")}`):""}
+
+    <!-- Per-traveler checklists -->
+    ${shownTravelers.map(traveler=>{
+      const tc=trip.travelerChecklists[traveler.id]||{};
+      const myCustom=customForT(traveler.id);
+      const stdDone=travelerItems.filter(i=>tc[i.key]).length;
+      const custDone=myCustom.filter(ci=>(ci.checked||{})[traveler.id]).length;
+      const totalDone=stdDone+custDone;
+      const totalItems=travelerItems.length+myCustom.length;
+      return cardHTML(`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <div style="font-size:13px;font-weight:700;color:var(--brown)">👤 ${traveler.id==="me"?"Me":esc(traveler.name||"Unnamed")}${traveler.confirmed===false&&traveler.id!=="me"?`<span style="font-size:11px;color:var(--muted);font-weight:400"> (unconfirmed)</span>`:""}</div>
+          <span style="font-size:11px;color:${totalDone===totalItems?"var(--success)":"var(--muted)"};font-weight:700">${totalDone}/${totalItems} complete</span>
+        </div>
+        ${travelerItems.map(item=>{
+          const checked=!!(tc[item.key]);
+          const costInp=item.hasCost?`<div style="margin-top:5px"><input type="number" class="inp traveler-check-cost" data-tid="${traveler.id}" data-key="${item.key}" value="${esc(tc[item.key+"_cost"]||"")}" placeholder="Final cost $" style="font-size:12px;padding:4px 8px;border-radius:6px;width:130px"></div>`:"";
+          return checkRow(checked,item.label,`<input type="checkbox" class="traveler-check" data-tid="${traveler.id}" data-key="${item.key}" ${checked?"checked":""} style="margin-top:3px;width:16px;height:16px;flex-shrink:0">`,costInp);
+        }).join("")}
+        ${myCustom.map(ci=>{
+          const checked=!!((ci.checked||{})[traveler.id]);
+          const cost=(ci.costs||{})[traveler.id]||"";
+          return checkRow(checked,ci.label,
+            `<input type="checkbox" class="custom-check" data-cid="${ci.id}" data-tid="${traveler.id}" ${checked?"checked":""} style="margin-top:3px;width:16px;height:16px;flex-shrink:0">`,
+            `<div style="margin-top:5px;display:flex;gap:8px;align-items:center"><input type="number" class="inp custom-check-cost" data-cid="${ci.id}" data-tid="${traveler.id}" value="${esc(cost)}" placeholder="Cost $" style="font-size:12px;padding:4px 8px;border-radius:6px;width:100px">${S.viewMode==="group"?`<button class="btn-remove-custom" data-cid="${ci.id}" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer">remove</button>`:""}</div>`,
+            true);
+        }).join("")}`);
+    }).join("")}
+  </div>`;
+}
+
+// ── Payments Tab ─────────────────────────────────────
+function renderPaymentsTab(trip,allTravelers){
+  const {payment}=trip;
+  const total=Number(trip.estimatedTotal)||bdTotal(trip)||0;
+  const logs=trip.paymentLogs||[];
+  const saved=logs.filter(l=>l.type==="saving").reduce((s,l)=>s+Number(l.amount),0);
+  const paid=logs.filter(l=>l.type==="payment").reduce((s,l)=>s+Number(l.amount),0);
+  const daysLeft=daysUntil(trip.departureDate);
+  const monthsLeft=daysLeft?Math.max(1,Math.ceil(daysLeft/30.44)):null;
+  const interest=payment.method==="credit"&&payment.apr&&total&&monthsLeft?Math.round(total*(Number(payment.apr)/100)*(monthsLeft/12)):0;
+  const perBase=trip.groupSize>1?Math.ceil(total/trip.groupSize):total;
+  const perInterest=trip.groupSize>1?Math.ceil(interest/trip.groupSize):interest;
+  const dr=(l,v,bold=false,color="")=>`<div class="data-row"><span style="color:var(--muted)">${l}</span><span style="font-weight:${bold?700:400};color:${color||"var(--brown)"};">${v}</span></div>`;
+  return `
+  <div style="display:flex;flex-direction:column;gap:16px">
+    ${cardHTML(`<div style="font-size:13px;font-weight:700;color:var(--brown);margin-bottom:12px">Payment Summary</div>
+      ${dr("Payment method",payment.method==="credit"?"💳 Credit Card":payment.method==="plan"?"📅 Payment Plan":"💰 Saving Up",true)}
+      ${dr("Total Budget",fmt(total),true)}${dr("Savings logged",fmt(saved))}${dr("Payments logged",fmt(paid))}
+      ${dr("Remaining",fmt(Math.max(0,total-saved-paid)),true,"var(--coral)")}`)}
+    ${payment.method==="credit"&&payment.apr?cardHTML(`<div style="font-size:13px;font-weight:700;color:var(--brown);margin-bottom:8px">📊 Estimated Interest</div>
+      ${dr("APR",`${payment.apr}%`)}${monthsLeft?dr("Months until trip",String(monthsLeft)):""}
+      <div class="data-row"><span style="color:var(--muted)">Estimated interest</span><span style="font-family:'Playfair Display',serif;font-weight:700;font-size:16px;color:var(--coral)">${fmt(interest)}</span></div>
+      ${interest>0?`<p style="font-size:12px;color:var(--muted);margin-top:4px">Total including interest: <strong style="color:var(--brown)">${fmt(total+interest)}</strong></p>`:""}`,
+      "border-left:4px solid var(--coral)"):""}
+    ${payment.method==="plan"&&payment.monthlyPayment?cardHTML(`<div style="font-size:13px;font-weight:700;color:var(--brown);margin-bottom:8px">📅 Payment Plan</div>
+      ${dr("Monthly payment",fmt(payment.monthlyPayment))}
+      ${monthsLeft?dr("Remaining payments",`${Math.ceil(Math.max(0,total-paid)/Number(payment.monthlyPayment))} months`):""}`):""}
+    ${trip.planning==="group"&&payment.payingForGroup&&total>0?cardHTML(`<div style="font-size:13px;font-weight:700;color:var(--brown);margin-bottom:4px">👥 Reimbursement Tracker</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Each traveler's share including estimated interest</p>
+      ${allTravelers.map(t=>{
+        const tLogs=logs.filter(l=>l.travelerId===t.id);
+        const tPaid=tLogs.reduce((s,l)=>s+Number(l.amount),0);
+        const tOwed=Math.max(0,perBase+perInterest-tPaid);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div><div style="font-size:14px;color:var(--brown);font-weight:${t.id==="me"?700:400}">${t.id==="me"?"You (your share)":esc(t.name||"Unnamed")}</div><div style="font-size:11px;color:var(--muted)">Paid: ${fmt(tPaid)}</div></div>
+          <div style="text-align:right"><div style="font-family:'Playfair Display',serif;font-weight:700;font-size:15px;color:${tOwed>0?"var(--coral)":"var(--success)"}">${tOwed>0?fmt(tOwed):"Paid ✓"}</div><div style="font-size:10px;color:var(--muted)">of ${fmt(perBase+perInterest)}</div></div>
+        </div>`;}).join("")}`):""}
+    ${payment.method==="saving"&&total>0?cardHTML(daysLeft&&daysLeft>0?(()=>{const rem=Math.max(0,total-saved-paid);const wks=Math.ceil(daysLeft/7);const mos=Math.ceil(daysLeft/30.44);return `<div style="font-size:13px;font-weight:700;color:var(--brown);margin-bottom:8px">💰 Savings Plan</div><div style="display:flex;gap:20px;flex-wrap:wrap">${wks>4?`<div><div style="font-size:11px;color:var(--muted)">Per Week</div><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--success)">${fmt(Math.ceil(rem/wks))}</div></div>`:""}<div><div style="font-size:11px;color:var(--muted)">Per Month</div><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--success)">${fmt(Math.ceil(rem/mos))}</div></div><div><div style="font-size:11px;color:var(--muted)">Days Left</div><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--brown)">${daysLeft}</div></div></div>`;})():`<div style="font-size:13px;font-weight:700;color:var(--brown);margin-bottom:8px">💰 Savings Plan</div><p style="font-size:13px;color:var(--muted)">Add a departure date in Settings for a personalized savings schedule.</p>`,"border-left:4px solid var(--success)"):""}
+  </div>`;
+}
+
+// ── Print Tab ────────────────────────────────────────
+function renderPrintTab(trip,allTravelers){
+  const isIndividual=S.viewMode&&S.viewMode!=="group";
+  const focusTraveler=isIndividual?allTravelers.find(t=>t.id===S.viewMode):null;
+  const travelerName=focusTraveler?(focusTraveler.id==="me"?"Me":focusTraveler.name||"Unnamed"):null;
+  return `
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:14px;color:var(--muted)">${isIndividual?`Printing individual receipt for <strong>${esc(travelerName)}</strong>.`:"Print a full group receipt and prep checklists."}</div>
+      <button id="btn-print" class="btn btn-primary">🖨️ Print / Save PDF</button>
+    </div>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:24px" id="print-preview">
+      ${buildReceiptHTML(trip,allTravelers,S.viewMode)}
+    </div>
+  </div>`;
+}
+
+// ── Settings Tab ─────────────────────────────────────
+function renderSettingsTab(trip,allTravelers){
+  return `
+  <div style="display:flex;flex-direction:column;gap:16px">
+    ${cardHTML(`${sectionHead("Color Theme 🎨")}<div class="grid-2">
+      ${Object.entries(THEMES).map(([key,t])=>`<button class="btn btn-secondary" data-theme="${key}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:2px solid ${S.theme===key?"var(--primary)":"var(--border)"};background:${S.theme===key?"var(--sand)":"var(--white)"}">
+        <div style="width:20px;height:20px;border-radius:50%;background:${t.primary};flex-shrink:0"></div>${t.name}</button>`).join("")}
+    </div>`)}
+    ${cardHTML(`${sectionHead("Trip Details ✏️")}<div style="display:flex;flex-direction:column;gap:12px">
+      <div>${lblHTML("Trip Name")}<input id="s-name" class="inp" value="${esc(trip.name)}" placeholder="Trip name"></div>
+      <div>${lblHTML("Destination")}<input id="s-dest" class="inp" value="${esc(trip.destination)}" placeholder="Destination"></div>
+      ${trip.dateMode==="dates"?`<div class="grid-2"><div>${lblHTML("Departure")}<input id="s-dep" type="date" class="inp" value="${esc(trip.departureDate)}"></div><div>${lblHTML("Return")}<input id="s-ret" type="date" class="inp" value="${esc(trip.returnDate)}"></div></div>`:""}
+      <div>${lblHTML("Notes")}<textarea id="s-notes" class="inp" rows="2">${esc(trip.notes)}</textarea></div>
+    </div>`)}
+    ${cardHTML(`${sectionHead("Manage Trips 🗺️")}<p style="font-size:13px;color:var(--muted);margin-bottom:14px">Add a new trip or remove existing ones.</p>
+      <button id="btn-new-trip-settings" class="btn btn-primary" style="width:100%;margin-bottom:16px">+ Plan Another Trip</button>
+      ${S.trips.length>1?S.trips.map(t=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div><div style="font-size:14px;font-weight:700;color:var(--brown)">${esc(t.name||"Unnamed")}</div>${t.destination?`<div style="font-size:12px;color:var(--muted)">${esc(t.destination)}</div>`:""}</div>
+        ${t.id!==trip.id?`<button class="btn btn-danger btn-small" data-delete-trip="${t.id}">Remove</button>`:"<span style=\"font-size:11px;color:var(--muted)\">current</span>"}
+      </div>`).join(""):""}`)}
+    ${cardHTML(`${sectionHead("Data & Backup 💾")}<p style="font-size:13px;color:var(--muted);margin-bottom:14px">Your data auto-saves in this browser's local storage. Export a backup file to protect against cache clearing or to move your data to another device.</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button id="btn-export-json" class="btn btn-primary" style="width:100%">⬇️ Export All Data (.json)</button>
+        <button id="btn-import-json" class="btn btn-secondary" style="width:100%">⬆️ Import Data from Backup</button>
+        <button id="btn-save-with-data" class="btn btn-secondary" style="width:100%">💾 Save App with My Data (.html)</button>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:10px">💡 <strong>Save App with My Data</strong> embeds all your trips directly into a new copy of this file — open it on any device, no import needed.</p>`)}
+  </div>`;
+}
+
+// ── Help Tab (User Guide + Release Notes) ────────────
+function renderHelpTab(){
+  const sec=(title,body)=>`<div style="margin-bottom:28px"><h4 style="font-family:'Playfair Display',serif;font-size:17px;color:var(--brown);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--border)">${title}</h4>${body}</div>`;
+  const tip=(icon,title,body)=>`<div style="display:flex;gap:12px;margin-bottom:12px"><div style="font-size:20px;flex-shrink:0;margin-top:2px">${icon}</div><div><div style="font-weight:700;font-size:14px;color:var(--brown);margin-bottom:3px">${title}</div><div style="font-size:13px;color:var(--muted);line-height:1.6">${body}</div></div></div>`;
+  const rn=(v,date,items)=>`<div style="margin-bottom:16px;padding:14px 16px;background:var(--sand);border-radius:12px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font-weight:700;font-size:14px;color:var(--brown)">v${v}</span><span style="font-size:11px;color:var(--muted)">${date}</span></div>${items.map(i=>`<div style="font-size:13px;color:var(--muted);padding:3px 0;display:flex;gap:8px"><span style="color:var(--primary);flex-shrink:0">•</span>${i}</div>`).join("")}</div>`;
+  const dashGrid=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">${[["Overview","Budget progress, cost breakdown, recent payments, and savings targets."],["Checklist","Group bookings and per-traveler prep lists. Add custom items for any traveler."],["Payments","Full payment log, interest estimates, reimbursement tracker, and savings plan."],["🖨️ Print","Group receipt or individual traveler receipt with payment history and checklist."]].map(([t,d])=>`<div style="padding:12px;background:var(--sand);border-radius:10px;font-size:13px;color:var(--muted)"><strong style="color:var(--brown);display:block;margin-bottom:4px">${t}</strong>${d}</div>`).join("")}</div>`;
+  const dashDesc=`<div style="font-size:13px;color:var(--muted);line-height:1.7"><p>The dashboard header has two dropdowns. The <strong>Trip Selector</strong> switches between your saved trips. The <strong>View Selector</strong> (group trips) lets you see the full group or a single traveler — this also controls what prints on the Print tab.</p>${dashGrid}</div>`;
+  return `
+  <div style="display:flex;flex-direction:column;gap:16px">
+    ${cardHTML(`
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:40px;margin-bottom:8px">🐝</div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:24px;color:var(--brown);margin-bottom:6px">Bee on Budget — Vacation Plans</h2>
+        <p style="font-size:13px;color:var(--muted)">User Guide &amp; Release Notes</p>
+      </div>
+      ${sec("🗺️ Getting Started",`
+        ${tip("1️⃣","Click Start Planning","From the welcome screen, tap Start Planning to open the 6-step setup wizard. You only need a trip name to begin — everything else is optional.")}
+        ${tip("2️⃣","Work through the wizard","Each step builds your trip profile: destination &amp; dates → group size → traveler names → trip type → cost breakdown → payment method. Use the Back button to revisit any step.")}
+        ${tip("3️⃣","Land on your dashboard","Once the wizard is complete, your trip dashboard opens with tabs: Overview, Checklist, Payments, Print, Settings, and this Guide.")}
+        ${tip("➕","Add more trips anytime","Go to ⚙️ Settings → Manage Trips → Plan Another Trip. Use the trip selector dropdown in the header to switch between trips.")}
+      `)}
+      ${sec("📊 Dashboard Overview",dashDesc)}
+      ${sec("💳 Logging Payments &amp; Savings",`
+        ${tip("💰","Savings","Use Log Payment or Savings on the Overview tab to record money set aside. Choose a traveler (group trips), enter the amount, and add an optional note.")}
+        ${tip("💳","Payments","Record a payment actually made — deposit, cruise balance, hotel charge, etc. Each entry is dated and tied to a specific traveler.")}
+        ${tip("🖨️","Individual receipts","Switch the View Selector to a specific traveler, then go to the Print tab. Their receipt shows costs, share owed, all their logged payments, and their balance.")}
+        ${tip("×","Removing entries","Each log entry on the Overview tab has an × button to delete it if entered in error.")}
+      `)}
+      ${sec("📋 Checklist &amp; Custom Items",`
+        ${tip("🏷️","Standard items","Each trip type has pre-loaded group booking items and per-traveler prep items (passport, flight booked, packing). Check them off as you complete them.")}
+        ${tip("➕","Adding custom items","Use the Add Custom Checklist Item card at the top of the Checklist tab. Type a label, choose All Travelers or Specific Travelers, and click Add. The item appears in each assigned traveler's card and on their printed checklist.")}
+        ${tip("💲","Final cost fields","Most checklist items have a Final cost $ field — fill these in as you confirm bookings to track actual spend against your estimate.")}
+      `)}
+      ${sec("💾 Saving Your Data",`
+        ${tip("🔄","Auto-save","Every change saves automatically to your browser local storage. Data persists through page refreshes and browser restarts.")}
+        ${tip("⬇️","Export backup","Settings → Data &amp; Backup → Export All Data (.json) downloads a backup file. Store it in Google Drive, email it to yourself, or keep it on your desktop.")}
+        ${tip("⬆️","Import backup","Restore from any exported .json file on any browser or device using Import Data from Backup.")}
+        ${tip("💾","Save App with My Data","Downloads a new copy of this HTML file with all your trips baked in. Open it anywhere — no import needed. Great for sharing or as a self-contained archive.")}
+        ${tip("⚠️","Cache clearing","Clearing browser site data also clears local storage. Always keep an exported .json or a saved-with-data .html as a backup before clearing cache.")}
+      `)}
+      ${sec("🖨️ Printing &amp; PDF",`
+        ${tip("👥","Full group receipt","Select Full Group in the View Selector, then go to the Print tab. Shows cost breakdown, per-traveler payment summaries, group booking checklist, and every traveler's prep checklist.")}
+        ${tip("👤","Individual receipt","Select a specific traveler in the View Selector first. Their receipt shows the overall costs with their per-person share, their full payment history, balance remaining, and their personal checklist only.")}
+        ${tip("🔓","Pop-ups required","The Print button opens a new window with the formatted receipt, then triggers the browser print dialog. If nothing happens, allow pop-ups for this file in your browser settings.")}
+      `)}
+    `)}
+    ${cardHTML(`
+      ${sectionHead("📋 Release Notes")}
+      ${rn("1.0","March 2026",[
+        "Initial release of Bee on Budget: Vacation Plans",
+        "6-step setup wizard: destination, group size, traveler names, trip type, cost breakdown, payment method",
+        "Four trip types with tailored cost breakdowns: Flying, Cruise, Road Trip, All-Inclusive Resort",
+        "Group travel support with per-traveler tracking and group / individual view toggle",
+        "Per-traveler payment logging with date, type, and note fields",
+        "Customizable checklists — add items assigned to all or specific travelers",
+        "Individual and group print receipts: cost breakdown, payment history, balance, and prep checklist",
+        "Interest estimate calculator for credit card payment method",
+        "Savings plan with weekly / monthly targets when departure date is set",
+        "8 color themes: Honey, Ocean, Forest, Sunset, Lavender, Rose, Slate, Midnight",
+        "Three-layer data persistence: auto-save, JSON export/import, and Save App with My Data",
+        "Fully offline — no server, no account, no API required",
+        "Print / Save PDF opens in a new window to bypass sandbox restrictions",
+        "User Guide and Release Notes accessible from welcome screen and dashboard Guide tab"
+      ])}
+    `)}
+  </div>`;
+}
+
+
+// ── Modal ─────────────────────────────────────────────
+function renderModal(trip,allTravelers){
+  if(!S.modal) return "";
+  if(S.modal.type==="guide"){
+    return `<div class="modal-overlay" id="guide-modal-overlay" style="align-items:flex-start;padding:20px;overflow-y:auto"><div style="background:var(--white);border-radius:18px;padding:32px;max-width:660px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);margin:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h2 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--brown);margin:0">📖 User Guide &amp; Release Notes</h2>
+        <button id="btn-close-guide" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--muted)">×</button>
+      </div>
+      ${renderHelpTab()}
+    </div></div>`;
+  }
+  if(S.modal.type==="mobileprint"){
+    return `<div class="modal-overlay"><div class="modal-box" style="text-align:center">
+      <div style="font-size:48px;margin-bottom:12px">📥</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--brown);margin-bottom:12px">Receipt Downloaded!</h3>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:20px">Your receipt has been saved to your Downloads folder. Open the file in your browser, then use your device's <strong>Share → Print</strong> option to print or save as PDF.</p>
+      <button id="btn-modal-cancel" class="btn btn-primary" style="width:100%">Got it</button>
+    </div></div>`;
+  }
+  if(S.modal.type==="log"){
+    const m=S.modal;
+    return `<div class="modal-overlay"><div class="modal-box">
+      <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--brown);margin-bottom:16px">Log Payment or Savings</h3>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div>${lblHTML("Type")}${segCtrl("logType",[{value:"payment",label:"💳 Payment Made"},{value:"saving",label:"💰 Savings Added"}],m.logType||"payment")}</div>
+        ${trip.planning==="group"?`<div>${lblHTML("Traveler")}<select id="log-traveler" class="inp"><option value=""></option>${allTravelers.map(t=>`<option value="${t.id}"${m.travelerId===t.id?" selected":""}>${t.id==="me"?"Me":esc(t.name||"Unnamed")}</option>`).join("")}</select></div>`:""}
+        <div>${lblHTML("Amount ($)")}<input id="log-amount" class="inp" type="number" value="${esc(m.amount||"")}" placeholder="e.g. 500"></div>
+        <div>${lblHTML("Note (optional)")}<input id="log-note" class="inp" value="${esc(m.note||"")}" placeholder='e.g. "Deposit paid"'></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+        ${btnHTML("btn-modal-cancel","Cancel","secondary")}${btnHTML("btn-modal-save","Save","primary")}
+      </div>
+    </div></div>`;
+  }
+  return "";
+}
+
+// ── Receipt HTML builder ──────────────────────────────
+function buildReceiptHTML(trip,allTravelers,viewMode){
+  const bt=getBT(trip);
+  const fields=BREAKDOWN_FIELDS[bt]||[];
+  const bdt=fields.reduce((s,f)=>s+(Number(trip.breakdown[f.key])||0),0);
+  const total=Number(trip.estimatedTotal)||bdt||0;
+  const {payment}=trip;
+  const groupItems=GROUP_CHECKLIST[bt]||[];
+  const travelerItems=TRAVELER_CHECKLIST[bt]||[];
+  const customItems=trip.customChecklistItems||[];
+  const tripLabel=trip.tripType==="cruise"?"Cruise":trip.tripType==="roadtrip"?"Road Trip":trip.isAllInclusive?"All-Inclusive Resort":"Flight";
+  const daysLeft=daysUntil(trip.departureDate);
+  const monthsLeft=daysLeft?Math.max(1,Math.ceil(daysLeft/30.44)):null;
+  const interest=payment.method==="credit"&&payment.apr&&total&&monthsLeft?Math.round(total*(Number(payment.apr)/100)*(monthsLeft/12)):0;
+  const logs=trip.paymentLogs||[];
+  const isIndividual=viewMode&&viewMode!=="group";
+  const focusTraveler=isIndividual?allTravelers.find(t=>t.id===viewMode):null;
+  const travelerName=focusTraveler?(focusTraveler.id==="me"?"Me":focusTraveler.name||"Unnamed"):null;
+  const perShare=trip.groupSize>1?Math.ceil((total+interest)/trip.groupSize):total+interest;
+  const myLogs=isIndividual?logs.filter(l=>l.travelerId===viewMode):logs;
+  const myPaid=myLogs.reduce((s,l)=>s+Number(l.amount),0);
+  const myOwed=Math.max(0,(isIndividual?perShare:total+interest)-myPaid);
+  const customForT=tid=>customItems.filter(ci=>ci.assignTo==="all"||(Array.isArray(ci.assignTo)&&ci.assignTo.includes(tid)));
+  const rs="border-bottom:1px solid #eee;padding:5px 0;font-size:13px;display:flex;justify-content:space-between;";
+  const chkRow=(checked,label,cost)=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px"><span style="color:${checked?"#27ae60":"#bbb"};flex-shrink:0;font-size:16px">${checked?"☑":"☐"}</span><span style="flex:1;text-decoration:${checked?"line-through":"none"};color:${checked?"#888":"#333"}">${esc(label)}</span>${cost?`<span style="font-weight:700;color:#333">${fmt(cost)}</span>`:""}</div>`;
+  const sh=t=>`<div style="font-weight:700;font-size:14px;color:#333;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #ccc">${esc(t)}</div>`;
+  const todayStr=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
+
+  let html=`<div style="text-align:center;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #ddd">
+    <div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#3D2208">🐝 Bee on Budget — Vacation Plans</div>
+    <div style="font-family:'Dancing Script',cursive;font-size:16px;color:#F5A623">${isIndividual?"Individual Traveler Receipt":"Trip Receipt"}</div>
+    <div style="font-size:12px;color:#888;margin-top:4px">${todayStr}</div>
+  </div>`;
+
+  if(isIndividual){
+    html+=`<div style="margin-bottom:20px"><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#3D2208;margin-bottom:2px">${esc(travelerName)}</div><div style="font-size:13px;color:#888;margin-bottom:8px">${esc(trip.name||"Unnamed Trip")}${trip.destination?` · ${esc(trip.destination)}`:""}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px">
+      <div><span style="color:#888">Trip Type: </span><strong>${esc(tripLabel)}</strong></div>
+      ${trip.departureDate?`<div><span style="color:#888">Departure: </span><strong>${esc(trip.departureDate)}</strong></div>`:""}
+      ${trip.returnDate?`<div><span style="color:#888">Return: </span><strong>${esc(trip.returnDate)}</strong></div>`:""}
+      <div><span style="color:#888">Group Size: </span><strong>${trip.groupSize} travelers</strong></div>
+    </div></div>`;
+    if(bdt>0){
+      html+=`<div style="margin-bottom:20px">${sh("Overall Trip Costs")}`;
+      fields.filter(f=>Number(trip.breakdown[f.key])>0).forEach(f=>{const v=Number(trip.breakdown[f.key]);html+=`<div style="${rs}"><span style="color:#666">${esc(f.label)}</span><div style="text-align:right"><span style="font-weight:700">${fmt(v)}</span>${trip.groupSize>1?`<div style="font-size:11px;color:#aaa">your share: ${fmt(Math.ceil(v/trip.groupSize))}</div>`:""}</div></div>`;});
+      html+=`<div style="${rs}border-top:1px solid #ccc;margin-top:4px;padding-top:8px;font-weight:700"><span>Group Total</span><span style="color:#0066aa">${fmt(total)}</span></div>`;
+      if(trip.groupSize>1) html+=`<div style="${rs}"><span style="font-weight:700">Your Share (${trip.groupSize} travelers)</span><span style="font-family:'Playfair Display',serif;font-weight:700;font-size:16px;color:#0066aa">${fmt(Math.ceil(total/trip.groupSize))}</span></div>`;
+      if(interest>0&&trip.groupSize>1) html+=`<div style="${rs}color:#888"><span>Your share of estimated interest</span><span style="font-weight:700;color:#c00">${fmt(Math.ceil(interest/trip.groupSize))}</span></div>`;
+      html+=`<div style="${rs}border-top:2px solid #ccc;margin-top:6px;padding-top:8px"><span style="font-weight:700;font-size:14px">Total You Owe</span><span style="font-family:'Playfair Display',serif;font-weight:700;font-size:18px;color:#c00">${fmt(perShare)}</span></div></div>`;
+    }
+    html+=`<div style="margin-bottom:20px">${sh("Payments Made")}`;
+    if(myLogs.length===0) html+=`<div style="font-size:13px;color:#aaa;font-style:italic">No payments recorded yet.</div>`;
+    myLogs.forEach(l=>{html+=`<div style="${rs}"><div><span style="font-weight:600;color:#333">${l.type==="payment"?"💳":"💰"} ${esc(l.date)}</span>${l.note?` <em style="color:#888">— ${esc(l.note)}</em>`:""}</div><span style="font-weight:700;color:#27ae60">${fmt(l.amount)}</span></div>`;});
+    if(myLogs.length>0){html+=`<div style="${rs}border-top:1px solid #ccc;margin-top:4px;padding-top:8px;font-weight:700"><span>Total Paid / Saved</span><span style="color:#27ae60">${fmt(myPaid)}</span></div>`;html+=`<div style="${rs}font-weight:700"><span>Balance Remaining</span><span style="color:${myOwed>0?"#c00":"#27ae60"}">${myOwed>0?fmt(myOwed):"Paid in Full ✓"}</span></div>`;}
+    html+=`</div>`;
+    const tc=trip.travelerChecklists[viewMode]||{};
+    const myCustom=customForT(viewMode);
+    html+=`<div style="margin-bottom:20px">${sh("Your Prep Checklist")}`;
+    travelerItems.forEach(item=>{html+=chkRow(!!(tc[item.key]),item.label,tc[item.key+"_cost"]?Number(tc[item.key+"_cost"]):null);});
+    myCustom.forEach(ci=>{html+=chkRow(!!((ci.checked||{})[viewMode]),ci.label,(ci.costs||{})[viewMode]?Number((ci.costs||{})[viewMode]):null);});
+    html+=`</div>`;
+  } else {
+    html+=`<div style="margin-bottom:20px"><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#3D2208;margin-bottom:8px">${esc(trip.name||"Unnamed Trip")}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px">
+      ${trip.destination?`<div><span style="color:#888">Destination: </span><strong>${esc(trip.destination)}</strong></div>`:""}
+      <div><span style="color:#888">Trip Type: </span><strong>${esc(tripLabel)}</strong></div>
+      ${trip.departureDate?`<div><span style="color:#888">Departure: </span><strong>${esc(trip.departureDate)}</strong></div>`:""}
+      ${trip.returnDate?`<div><span style="color:#888">Return: </span><strong>${esc(trip.returnDate)}</strong></div>`:""}
+      ${trip.timelineGoal&&!trip.departureDate?`<div><span style="color:#888">Goal: </span><strong>${esc(trip.timelineGoal)}</strong></div>`:""}
+      <div><span style="color:#888">Travelers: </span><strong>${trip.planning==="individual"?"Solo":trip.groupSize}</strong></div>
+    </div></div>`;
+    if(bdt>0){
+      html+=`<div style="margin-bottom:20px">${sh("Cost Breakdown")}`;
+      fields.filter(f=>Number(trip.breakdown[f.key])>0).forEach(f=>{html+=`<div style="${rs}"><span style="color:#666">${esc(f.label)}</span><span style="font-weight:700">${fmt(trip.breakdown[f.key])}</span></div>`;});
+      html+=`<div style="${rs}border-top:1px solid #ccc;margin-top:4px;padding-top:8px;font-weight:700"><span>Total Estimate</span><span style="color:#0066aa">${fmt(total)}</span></div></div>`;
+    }
+    html+=`<div style="margin-bottom:20px">${sh("Traveler Payment Summary")}`;
+    allTravelers.forEach(t=>{
+      const tLogs=logs.filter(l=>l.travelerId===t.id);const tPaid=tLogs.reduce((s,l)=>s+Number(l.amount),0);const tOwed=Math.max(0,perShare-tPaid);
+      html+=`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #f0f0f0"><div style="display:flex;justify-content:space-between;font-weight:700;font-size:13px;margin-bottom:4px"><span>${esc(t.id==="me"?"Me":t.name||"Unnamed")}</span><span style="color:${tOwed>0?"#c00":"#27ae60"}">${tOwed>0?`Owes ${fmt(tOwed)}`:"Paid in Full ✓"}</span></div>`;
+      if(tLogs.length===0) html+=`<div style="font-size:12px;color:#bbb;padding-left:12px;font-style:italic">No payments logged</div>`;
+      tLogs.forEach(l=>{html+=`<div style="display:flex;justify-content:space-between;font-size:12px;color:#666;padding-left:12px"><span>${l.type==="payment"?"💳":"💰"} ${esc(l.date)}${l.note?` — ${esc(l.note)}`:""}</span><span style="color:#27ae60;font-weight:600">${fmt(l.amount)}</span></div>`;});
+      html+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding-left:12px;margin-top:4px;font-weight:700"><span>Total paid: ${fmt(tPaid)}</span><span>Share owed: ${fmt(perShare)}</span></div></div>`;
+    });
+    html+=`</div>`;
+    if(groupItems.length>0){html+=`<div style="margin-bottom:20px">${sh("Group Booking Checklist")}`;groupItems.forEach(item=>{html+=chkRow(!!(trip.checklist[item.key]),item.label,trip.checklist[item.key+"_cost"]?Number(trip.checklist[item.key+"_cost"]):null);});html+=`</div>`;}
+    allTravelers.forEach(traveler=>{
+      const tc=trip.travelerChecklists[traveler.id]||{};const myCustom=customForT(traveler.id);
+      html+=`<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">${traveler.id==="me"?"Your Prep Checklist":`${esc(traveler.name||"Unnamed")}'s Prep Checklist`}</div>`;
+      travelerItems.forEach(item=>{html+=chkRow(!!(tc[item.key]),item.label,tc[item.key+"_cost"]?Number(tc[item.key+"_cost"]):null);});
+      myCustom.forEach(ci=>{html+=chkRow(!!((ci.checked||{})[traveler.id]),ci.label,(ci.costs||{})[traveler.id]?Number((ci.costs||{})[traveler.id]):null);});
+      html+=`</div>`;
+    });
+  }
+  html+=`<div style="text-align:center;font-size:11px;color:#aaa;margin-top:24px;padding-top:12px;border-top:1px solid #eee">Conceived &amp; designed by 🐝 Melissa @ The Honeybee Hive</div>`;
+  return html;
+}
+
+// ══════════════════════════════════════════════════════
+// PRINT
+// ══════════════════════════════════════════════════════
+function isMobileDevice(){return /iPhone|iPad|iPod|Android|webOS|BlackBerry|Windows Phone/i.test(navigator.userAgent);}
+
+function doPrint(trip,allTravelers,viewMode){
+  const body=buildReceiptHTML(trip,allTravelers,viewMode);
+  const tripName=(trip.name||"Trip Receipt").replace(/[^a-z0-9\-_ ]/gi,"").trim()||"receipt";
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(tripName)} — Bee on Budget</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Playfair+Display:wght@700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Nunito',sans-serif;color:#333;padding:24px;max-width:720px;margin:0 auto;font-size:14px;line-height:1.5;}@media print{.no-print{display:none!important;}body{padding:0;}}@page{margin:14mm;}</style>
+  </head><body>${body}</body></html>`;
+  if(isMobileDevice()){
+    // Mobile: download the receipt as an HTML file the user can open and print
+    try{
+      const blob=new Blob([html],{type:"text/html"});
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(blob);
+      a.download=tripName+"-receipt.html";
+      document.body.appendChild(a);a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+      S.modal={type:"mobileprint"};render();
+    }catch(e){alert("Could not generate receipt file. Try on a desktop browser for full print support.");}
+    return;
+  }
+  // Desktop: open in new window and print
+  const win=window.open("","_blank","width=800,height=900");
+  if(!win){alert("Please allow pop-ups for this site to enable printing.");return;}
+  win.document.write(html);win.document.close();win.focus();setTimeout(()=>{win.print();},600);
+}
+
+// ══════════════════════════════════════════════════════
+// EVENT BINDING
+// ══════════════════════════════════════════════════════
+function updateTrip(id,changes){
+  S.trips=S.trips.map(t=>t.id===id?{...t,...changes}:t);
+  saveState();render();
+}
+
+function bindEvents(){
+  // Welcome
+  document.getElementById("btn-start")?.addEventListener("click",()=>{S.screen="setup";S.wizard=newVacation();S.wizardStep=1;render();});
+  document.getElementById("btn-go-dashboard")?.addEventListener("click",()=>{S.screen="dashboard";render();});
+  document.getElementById("btn-import")?.addEventListener("click",importJSON);
+  document.getElementById("btn-open-guide")?.addEventListener("click",()=>{
+    // If we have trips, go to dashboard help tab; otherwise show standalone guide modal
+    if(S.trips.length>0){S.screen="dashboard";S.activeTab="help";render();}
+    else{S.modal={type:"guide"};render();}
+  });
+
+  // Wizard navigation
+  document.getElementById("btn-wiz-back")?.addEventListener("click",()=>{
+    const w=S.wizard;const isGroup=w.planning==="group";
+    const nums=getStepNums(isGroup);const ci=nums.indexOf(S.wizardStep);
+    if(ci>0){S.wizardStep=nums[ci-1];render();}
+  });
+  document.getElementById("btn-wiz-next")?.addEventListener("click",()=>{
+    syncWizardInputs();
+    const w=S.wizard;const isGroup=w.planning==="group";
+    const nums=getStepNums(isGroup);const ci=nums.indexOf(S.wizardStep);
+    if(ci<nums.length-1){S.wizardStep=nums[ci+1];render();}
+  });
+  document.getElementById("btn-wiz-finish")?.addEventListener("click",()=>{
+    syncWizardInputs();
+    const w=S.wizard;
+    const {checklist,travelerChecklists}=initChecklists(w);
+    const initLogs=Number(w.payment.currentSaved)>0?[{id:uid(),travelerId:"me",amount:Number(w.payment.currentSaved),type:"saving",note:"Initial savings",date:today()}]:[];
+    const trip={...w,checklist,travelerChecklists,paymentLogs:initLogs,customChecklistItems:[]};
+    S.trips.push(trip);S.activeId=trip.id;S.screen="dashboard";S.activeTab="overview";
+    saveState();render();
+  });
+
+  // Wizard inputs
+  document.getElementById("w-name")?.addEventListener("input",e=>{S.wizard.name=e.target.value;});
+  document.getElementById("w-dest")?.addEventListener("input",e=>{S.wizard.destination=e.target.value;});
+  document.getElementById("w-goal")?.addEventListener("input",e=>{S.wizard.timelineGoal=e.target.value;});
+  document.getElementById("w-dep")?.addEventListener("change",e=>{S.wizard.departureDate=e.target.value;render();});
+  document.getElementById("w-ret")?.addEventListener("change",e=>{S.wizard.returnDate=e.target.value;});
+  document.getElementById("w-notes")?.addEventListener("input",e=>{S.wizard.notes=e.target.value;});
+  document.getElementById("w-total")?.addEventListener("input",e=>{S.wizard.estimatedTotal=e.target.value;});
+  document.getElementById("w-allinclusive")?.addEventListener("change",e=>{S.wizard.isAllInclusive=e.target.checked;render();});
+  document.getElementById("w-apr")?.addEventListener("input",e=>{S.wizard.payment={...S.wizard.payment,apr:e.target.value};render();});
+  document.getElementById("w-monthly")?.addEventListener("input",e=>{S.wizard.payment={...S.wizard.payment,monthlyPayment:e.target.value};});
+  document.getElementById("w-cursaved")?.addEventListener("input",e=>{S.wizard.payment={...S.wizard.payment,currentSaved:e.target.value};render();});
+  document.getElementById("w-payforgroup")?.addEventListener("change",e=>{S.wizard.payment={...S.wizard.payment,payingForGroup:e.target.checked};});
+  document.getElementById("btn-gs-dec")?.addEventListener("click",()=>{S.wizard.groupSize=Math.max(2,S.wizard.groupSize-1);render();});
+  document.getElementById("btn-gs-inc")?.addEventListener("click",()=>{S.wizard.groupSize++;render();});
+  document.getElementById("btn-add-traveler")?.addEventListener("click",()=>{S.wizard.travelers.push({id:uid(),name:"",confirmed:false});render();});
+  document.getElementById("w-portion")?.addEventListener("input",e=>{S.wizard.portionPct=Number(e.target.value);document.getElementById("portion-display").textContent=e.target.value+"%";});
+
+  // Traveler management in wizard
+  document.querySelectorAll(".traveler-name").forEach(inp=>inp.addEventListener("input",e=>{const tid=e.target.dataset.tid;S.wizard.travelers=S.wizard.travelers.map(t=>t.id===tid?{...t,name:e.target.value}:t);}));
+  document.querySelectorAll(".traveler-confirmed").forEach(inp=>inp.addEventListener("change",e=>{const tid=e.target.dataset.tid;S.wizard.travelers=S.wizard.travelers.map(t=>t.id===tid?{...t,confirmed:e.target.checked}:t);}));
+  document.querySelectorAll(".btn-remove-traveler").forEach(btn=>btn.addEventListener("click",e=>{const tid=e.target.dataset.tid;S.wizard.travelers=S.wizard.travelers.filter(t=>t.id!==tid);render();}));
+
+  // Seg controls
+  document.querySelectorAll("[data-seg]").forEach(btn=>btn.addEventListener("click",e=>{
+    const name=e.target.dataset.seg,val=e.target.dataset.val;
+    if(S.screen==="setup"){
+      if(name==="dateMode"){S.wizard.dateMode=val;render();}
+      else if(name==="planning"){S.wizard.planning=val;render();}
+      else if(name==="trackingMode"){S.wizard.trackingMode=val;render();}
+      else if(name==="assignTo"){window._newItemAssignTo=val;window._newItemTravelers=[];render();}
+      else if(name==="logType"){S.modal={...S.modal,logType:val};render();}
+    } else if(S.screen==="dashboard"){
+      if(name==="logType"){S.modal={...S.modal,logType:val};render();}
+    }
+  }));
+
+  // Radio lists
+  document.querySelectorAll("[data-radio]").forEach(el=>el.addEventListener("click",e=>{
+    const name=e.currentTarget.dataset.radio,val=e.currentTarget.dataset.val;
+    if(name==="paymentMethod"){S.wizard.payment={...S.wizard.payment,method:val};render();}
+    else if(name==="trackingMode"){S.wizard.trackingMode=val;render();}
+  }));
+
+  // Trip type selection
+  document.querySelectorAll("[data-triptype]").forEach(el=>el.addEventListener("click",e=>{S.wizard.tripType=e.currentTarget.dataset.triptype;S.wizard.isAllInclusive=false;render();}));
+
+  // Breakdown fields
+  document.querySelectorAll(".breakdown-inp").forEach(inp=>inp.addEventListener("input",e=>{S.wizard.breakdown={...S.wizard.breakdown,[e.target.dataset.key]:e.target.value};render();document.getElementById("w-total")?.focus&&null;}));
+
+  // Dashboard
+  document.getElementById("trip-selector")?.addEventListener("change",e=>{S.activeId=e.target.value;S.viewMode="group";render();});
+  document.getElementById("view-selector")?.addEventListener("change",e=>{S.viewMode=e.target.value;render();});
+  document.querySelectorAll(".tab-btn").forEach(btn=>btn.addEventListener("click",e=>{S.activeTab=e.target.dataset.tab;render();}));
+
+  // Overview: log modal
+  document.getElementById("btn-open-log-modal")?.addEventListener("click",()=>{
+    const trip=S.trips.find(t=>t.id===S.activeId)||S.trips[0];
+    const allT=trip.planning==="group"?[{id:"me",name:"Me"},...trip.travelers]:[{id:"me",name:"Me"}];
+    S.modal={type:"log",logType:"payment",travelerId:allT[0]?.id||"me",amount:"",note:""};render();
+  });
+  document.querySelectorAll(".btn-delete-log").forEach(btn=>btn.addEventListener("click",e=>{
+    const lid=e.target.dataset.lid;const trip=S.trips.find(t=>t.id===S.activeId);
+    if(trip){updateTrip(trip.id,{paymentLogs:(trip.paymentLogs||[]).filter(l=>l.id!==lid)});}
+  }));
+
+  // Modal
+  document.getElementById("btn-modal-cancel")?.addEventListener("click",()=>{S.modal=null;render();});
+  document.getElementById("btn-close-guide")?.addEventListener("click",()=>{S.modal=null;render();});
+  document.getElementById("guide-modal-overlay")?.addEventListener("click",e=>{if(e.target===e.currentTarget){S.modal=null;render();}});
+  document.getElementById("btn-modal-save")?.addEventListener("click",()=>{
+    const trip=S.trips.find(t=>t.id===S.activeId);if(!trip)return;
+    const allT=trip.planning==="group"?[{id:"me",name:"Me"},...trip.travelers]:[{id:"me",name:"Me"}];
+    const amt=Number(document.getElementById("log-amount")?.value||0);if(amt<=0){alert("Please enter an amount greater than $0.");return;}
+    const tId=trip.planning==="group"?(document.getElementById("log-traveler")?.value||allT[0]?.id):allT[0]?.id;
+    const entry={id:uid(),travelerId:tId,amount:amt,type:S.modal.logType||"payment",note:document.getElementById("log-note")?.value||"",date:today()};
+    updateTrip(trip.id,{paymentLogs:[...(trip.paymentLogs||[]),entry]});
+    S.modal=null;render();
+  });
+  document.getElementById("log-traveler")?.addEventListener("change",e=>{if(S.modal)S.modal.travelerId=e.target.value;});
+  document.querySelectorAll("[data-seg=logType]").forEach(btn=>btn.addEventListener("click",e=>{if(S.modal)S.modal.logType=e.target.dataset.val;render();}));
+
+  // Checklist
+  document.querySelectorAll(".group-check").forEach(inp=>inp.addEventListener("change",e=>{
+    const trip=S.trips.find(t=>t.id===S.activeId);if(!trip)return;
+    updateTrip(trip.id,{checklist:{...trip.checklist,[e.target.dataset.key]:e.target.checked}});
+  }));
+  document.querySelectorAll(".group-check-cost").forEach(inp=>inp.addEventListener("input",e=>{
+    const trip=S.trips.find(t=>t.id===S.activeId);if(!trip)return;
+    updateTrip(trip.id,{checklist:{...trip.checklist,[e.target.dataset.key+"_cost"]:e.target.value}});
+  }));
+  document.querySelectorAll(".traveler-check").forEach(inp=>inp.addEventListener("change",e=>{
+    const trip=S.trips.find(t=>t.id===S.activeId);if(!trip)return;
+    const tc={...trip.travelerChecklists};tc[e.target.dataset.tid]={...(tc[e.target.dataset.tid]||{}),[e.target.dataset.key]:e.target.checked};
+    updateTrip(trip.id,{travelerChecklists:tc});
+  }));
+  document.querySelectorAll(".traveler-check-cost").forEach(inp=>inp.addEventListener("input",e=>{
+    const trip=S.trips.find(t=>t.id===S.activeId);if(!trip)return;
+    const tc={...trip.travelerChecklists};tc[e.target.dataset.tid]={...(tc[e.target.dataset.tid]||{}),[e.target.dataset.key+"_cost"]:e.target.value};
+    updateTrip(trip.id,{travelerChecklists:tc});
+  }));
+  document.querySelectorAll(".custom-check").forEach(inp=>inp.addEventListener("change",e=>{
+    const trip=S.trips.find(t=>t.id===S.activeId);if(!trip)return;
+    const ci=e.target.dataset.cid,tid=e.target.dataset.tid;
+    updateTrip(trip.id,{customChecklistItems:(trip.customChecklistItems||[]).map(c=>c.id===ci?{...c,checked:{...(c.checked||{}),[tid]:e.target.checked}}:c)});
+  }));
+  document.querySelectorAll(".custom-check-cost").forEach(inp=>inp.addEventListener("input",e=>{
+    const trip=S.trips.find(t=>t.id===S.activeId);if(!trip)return;
+    const ci=e.target.dataset.cid,tid=e.target.dataset.tid;
+    updateTrip(trip.id,{customChecklistItems:(trip.customChecklistItems||[]).map(c=>c.id===ci?{...c,costs:{...(c.costs||{}),[tid]:e.target.value}}:c)});
+  }));
+  document.querySelectorAll(".btn-remove-custom").forEach(btn=>btn.addEventListener("click",e=>{
+    const trip=S.trips.find(t=>t.id===S.activeId);if(!trip)return;
+    updateTrip(trip.id,{customChecklistItems:(trip.customChecklistItems||[]).filter(c=>c.id!==e.target.dataset.cid)});
+  }));
+  document.querySelectorAll(".assign-traveler-chk").forEach(inp=>inp.addEventListener("change",e=>{
+    const tid=e.target.dataset.tid;
+    window._newItemTravelers=window._newItemTravelers||[];
+    if(e.target.checked){if(!window._newItemTravelers.includes(tid))window._newItemTravelers.push(tid);}
+    else{window._newItemTravelers=window._newItemTravelers.filter(x=>x!==tid);}
+    render();
+  }));
+  document.getElementById("btn-add-custom-item")?.addEventListener("click",()=>{
+    const trip=S.trips.find(t=>t.id===S.activeId);if(!trip)return;
+    const label=document.getElementById("new-item-label")?.value||"";if(!label.trim())return;
+    const assignTo=(window._newItemAssignTo||"all")==="all"?"all":(window._newItemTravelers||[]);
+    if(Array.isArray(assignTo)&&assignTo.length===0){alert("Please select at least one traveler, or choose All Travelers.");return;}
+    const ci={id:uid(),label:label.trim(),assignTo,checked:{},costs:{}};
+    updateTrip(trip.id,{customChecklistItems:[...(trip.customChecklistItems||[]),ci]});
+    window._newItemAssignTo="all";window._newItemTravelers=[];
+  });
+
+  // Print
+  document.getElementById("btn-print")?.addEventListener("click",()=>{
+    const trip=S.trips.find(t=>t.id===S.activeId)||S.trips[0];
+    const allT=trip.planning==="group"?[{id:"me",name:"Me"},...trip.travelers]:[{id:"me",name:"Me"}];
+    doPrint(trip,allT,S.viewMode);
+  });
+
+  // Settings
+  document.querySelectorAll("[data-theme]").forEach(btn=>btn.addEventListener("click",e=>{S.theme=e.currentTarget.dataset.theme;saveState();render();}));
+  document.getElementById("s-name")?.addEventListener("input",e=>{const trip=S.trips.find(t=>t.id===S.activeId);if(trip)updateTrip(trip.id,{name:e.target.value});});
+  document.getElementById("s-dest")?.addEventListener("input",e=>{const trip=S.trips.find(t=>t.id===S.activeId);if(trip)updateTrip(trip.id,{destination:e.target.value});});
+  document.getElementById("s-dep")?.addEventListener("change",e=>{const trip=S.trips.find(t=>t.id===S.activeId);if(trip)updateTrip(trip.id,{departureDate:e.target.value});});
+  document.getElementById("s-ret")?.addEventListener("change",e=>{const trip=S.trips.find(t=>t.id===S.activeId);if(trip)updateTrip(trip.id,{returnDate:e.target.value});});
+  document.getElementById("s-notes")?.addEventListener("input",e=>{const trip=S.trips.find(t=>t.id===S.activeId);if(trip)updateTrip(trip.id,{notes:e.target.value});});
+  document.getElementById("btn-new-trip-settings")?.addEventListener("click",()=>{S.screen="setup";S.wizard=newVacation();S.wizardStep=1;render();});
+  document.getElementById("btn-new-trip")?.addEventListener("click",()=>{S.screen="setup";S.wizard=newVacation();S.wizardStep=1;render();});
+  document.querySelectorAll("[data-delete-trip]").forEach(btn=>btn.addEventListener("click",e=>{
+    const id=e.target.dataset.deleteTrp||e.target.getAttribute("data-delete-trip");
+    if(confirm(`Remove this trip?`)){
+      S.trips=S.trips.filter(t=>t.id!==id);
+      if(S.activeId===id&&S.trips.length>0)S.activeId=S.trips[0].id;
+      saveState();render();
+    }
+  }));
+  document.getElementById("btn-export-json")?.addEventListener("click",exportJSON);
+  document.getElementById("btn-import-json")?.addEventListener("click",importJSON);
+  document.getElementById("btn-save-with-data")?.addEventListener("click",saveAppWithData);
+}
+
+function syncWizardInputs(){
+  const w=S.wizard;
+  ["w-name","w-dest","w-goal","w-notes","w-total","w-cursaved","w-apr","w-monthly"].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const v=el.value;
+    if(id==="w-name")w.name=v;else if(id==="w-dest")w.destination=v;else if(id==="w-goal")w.timelineGoal=v;
+    else if(id==="w-notes")w.notes=v;else if(id==="w-total")w.estimatedTotal=v;
+    else if(id==="w-cursaved")w.payment={...w.payment,currentSaved:v};
+    else if(id==="w-apr")w.payment={...w.payment,apr:v};
+    else if(id==="w-monthly")w.payment={...w.payment,monthlyPayment:v};
+  });
+  document.querySelectorAll(".traveler-name").forEach(inp=>{const tid=inp.dataset.tid;w.travelers=w.travelers.map(t=>t.id===tid?{...t,name:inp.value}:t);});
+  document.querySelectorAll(".breakdown-inp").forEach(inp=>{w.breakdown={...w.breakdown,[inp.dataset.key]:inp.value};});
+}
+
+// ══════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════
+window._newItemAssignTo="all";window._newItemTravelers=[];
+
+// Load seed data if app was saved-with-data
+if(window.__BOB_SEED__){
+  try{Object.assign(S,window.__BOB_SEED__);S.modal=null;localStorage.setItem(STORAGE_KEY,JSON.stringify(window.__BOB_SEED__));}
+  catch(e){console.warn("Seed load failed",e);}
+} else {
+  loadState();
+}
+
+// If we have trips but are on welcome, show the existing trips option
+if(S.screen==="dashboard"&&S.trips.length===0)S.screen="welcome";
+
+// ── PWA: Inject manifest as blob URL ──────────────────────────────────────
+(function(){
+  const manifest={
+    name:"Bee on Budget — Vacation Plans",
+    short_name:"Vacation Plans",
+    description:"Plan and budget your dream vacation with group payments, checklists, and receipts.",
+    start_url:"./",
+    display:"standalone",
+    background_color:"#FFFBF0",
+    theme_color:"#F5A623",
+    orientation:"portrait-primary",
+    icons:[
+      {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='256' fill='%23F5A623'/%3E%3Ccircle cx='256' cy='256' r='238' fill='%23FFFBF0'/%3E%3Ctext x='256' y='310' font-size='240' text-anchor='middle'%3E🐝%3C/text%3E%3Ccircle cx='256' cy='256' r='245' fill='none' stroke='%23C47D0E' stroke-width='6'/%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"},
+      {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Ccircle cx='96' cy='96' r='96' fill='%23F5A623'/%3E%3Ctext x='96' y='126' font-size='96' text-anchor='middle'%3E🐝%3C/text%3E%3C/svg%3E",sizes:"192x192",type:"image/svg+xml"}
+    ]
+  };
+  try{
+    const blob=new Blob([JSON.stringify(manifest)],{type:"application/json"});
+    document.getElementById("pwa-manifest").href=URL.createObjectURL(blob);
+  }catch(e){}
+})();
+
+// ── PWA: Register service worker for offline caching ─────────────────────
+(function(){
+  if(!("serviceWorker" in navigator))return;
+  const swCode=`
+const CACHE="bob-vacation-v1";
+const FILES=["./"];
+self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));});
+self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;e.respondWith(caches.open(CACHE).then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res&&res.status===200)c.put(e.request,res.clone());return res;}))));});
+`;
+  try{
+    const blob=new Blob([swCode],{type:"application/javascript"});
+    const swUrl=URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl,{scope:"./"}).catch(()=>{});
+  }catch(e){}
+})();
+
+// ── PWA: Handle install prompt ────────────────────────────────────────────
+let _deferredInstall=null;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();
+  _deferredInstall=e;
+  const banner=document.getElementById("install-banner");
+  if(banner){banner.classList.add("visible");}
+});
+window.addEventListener("appinstalled",()=>{
+  _deferredInstall=null;
+  const banner=document.getElementById("install-banner");
+  if(banner){banner.classList.remove("visible");}
+});
+
+render();
+
+// Bind install banner buttons (after render so DOM exists)
+setTimeout(()=>{
+  document.getElementById("btn-install-accept")?.addEventListener("click",()=>{
+    if(_deferredInstall){_deferredInstall.prompt();_deferredInstall.userChoice.then(()=>{_deferredInstall=null;document.getElementById("install-banner")?.classList.remove("visible");});}
+  });
+  document.getElementById("btn-install-dismiss")?.addEventListener("click",()=>{
+    document.getElementById("install-banner")?.classList.remove("visible");
+    sessionStorage.setItem("bob-install-dismissed","1");
+  });
+  if(sessionStorage.getItem("bob-install-dismissed")){
+    document.getElementById("install-banner")?.classList.remove("visible");
+  }
+},100);
+</script>
+<!-- Install banner (shown when PWA install is available) -->
+<div class="install-banner no-print" id="install-banner">
+  <div>
+    <p>🐝 Add to Home Screen</p>
+    <small>Install as an app for the best experience</small>
+  </div>
+  <div class="install-banner-btns">
+    <button id="btn-install-dismiss" style="background:transparent;border:1.5px solid rgba(255,255,255,0.4);color:#fff;font-family:'Nunito',sans-serif;font-weight:700;font-size:12px;padding:7px 14px;border-radius:8px;cursor:pointer">Not now</button>
+    <button id="btn-install-accept" style="background:#F5A623;border:none;color:#3D2208;font-family:'Nunito',sans-serif;font-weight:700;font-size:12px;padding:7px 14px;border-radius:8px;cursor:pointer">Install</button>
+  </div>
+</div>
+</body>
+</html>
